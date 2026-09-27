@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#071526" />
+    <title>Moreyield World · 独立创业者的作品世界</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./src/character-walk-v3.css" />
+    <link rel="stylesheet" href="./src/final-integration.css" />
+    <link rel="stylesheet" href="./src/landmark-panels.css" />
+  </head>
+  <body>
+    <main id="experience" class="experience" data-phase="loading" aria-label="传送门启动场景">
+      <div id="scene" class="scene" aria-hidden="true">
+        <img
+          id="sceneBackground"
+          class="scene__background"
+          src="./public/assets/exterior-portal.png"
+          alt=""
+          draggable="false"
+        />
+
+        <img
+          id="mountainTitle"
+          class="mountain-title"
+          src="./public/assets/moreyield-mountain-title.png"
+          alt="欢迎来到 Moreyield 的世界"
+          draggable="false"
+        />
+
+        <div class="portal" aria-hidden="true">
+          <span class="portal__core"></span>
+          <span class="portal__ring portal__ring--one"></span>
+          <span class="portal__ring portal__ring--two"></span>
+          <span class="portal__spark portal__spark--one"></span>
+          <span class="portal__spark portal__spark--two"></span>
+          <span class="portal__spark portal__spark--three"></span>
+        </div>
+
+        <div id="player" class="player" aria-hidden="true">
+          <span class="player__shadow"></span>
+          <img
+            class="player__sprite"
+            src="./public/assets/characters/v5/player/right/02.png"
+            alt=""
+            draggable="false"
+          />
+        </div>
+      </div>
+
+      <div id="finalIntegrationHost" class="final-integration-host" hidden></div>
+
+      <a class="personal-home" data-personal-home href="../index.html#world">
+        <span aria-hidden="true">←</span> 返回主页
+      </a>
+
+      <audio id="backgroundMusic" preload="none" loop data-track="Ocean Day"
+        src="./public/assets/audio/terraria-ocean.mp3"></audio>
+      <button id="musicButton" class="music-control" type="button"
+        aria-label="开启声音" aria-pressed="false" data-state="off">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+          stroke-width="1.8" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true">
+          <path d="M11 4 6 8H3v8h3l5 4V4Z" />
+          <g class="music-control__waves"><path d="M15 8c3 2 3 6 0 8M18 4c6 4 6 12 0 16" /></g>
+          <path class="music-control__mute" d="m16 9 5 6m0-6-5 6" />
+        </svg>
+      </button>
+
+      <div class="atmosphere atmosphere--veil" aria-hidden="true"></div>
+      <div class="atmosphere atmosphere--vignette" aria-hidden="true"></div>
+      <div class="atmosphere atmosphere--grain" aria-hidden="true"></div>
+      <div id="portalFlash" class="portal-flash" aria-hidden="true"></div>
+
+      <div id="loading" class="loading" role="status" aria-live="polite">
+        <span class="loading__line"></span>
+      </div>
+
+      <button id="enterButton" class="enter" type="button" aria-label="开始探索" title="开始探索" hidden disabled>
+        <span class="enter__icon" aria-hidden="true">&#9654;</span>
+        <span id="enterLabel" class="enter__label">开始探索</span>
+      </button>
+
+      <div id="journeyFeedback" class="journey-feedback" hidden>
+        <span class="journey-feedback__signal" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span id="journeyLabel" class="journey-feedback__label" role="status" aria-live="polite"></span>
+        <button id="skipButton" class="journey-feedback__skip" type="button" aria-label="跳过进入动画" title="跳过进入动画">
+          <span aria-hidden="true">&#187;</span>
+        </button>
+      </div>
+
+      <div id="worldTransition" class="world-transition" hidden aria-hidden="true">
+        <span class="world-transition__label">返回外景</span>
+      </div>
+
+      <button id="replayButton" class="replay" type="button" aria-label="重播外景动画" title="重播" hidden disabled>
+        <span aria-hidden="true">&#8635;</span>
+      </button>
+
+      <p id="statusText" class="sr-only" aria-live="polite">场景加载中</p>
+    </main>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

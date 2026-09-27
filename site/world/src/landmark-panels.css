@@ -1,0 +1,349 @@
+/* The portfolio expands the same wooden noticeboard that lives in the map. */
+.phaser-interior[data-active-trigger="interior.project-workstation"] .phaser-interior__backdrop {
+  isolation: isolate;
+  background: rgb(30 22 15 / 45%);
+  backdrop-filter: blur(6px);
+}
+
+.phaser-interior[data-active-trigger="interior.project-workstation"] .phaser-interior__backdrop::before {
+  position: absolute;
+  z-index: -1;
+  inset: -16px;
+  background: linear-gradient(rgb(32 22 13 / 38%), rgb(22 15 9 / 65%)),
+    url("../public/assets/landmarks/noticeboard-backdrop.webp") center / cover;
+  filter: blur(6px);
+  pointer-events: none;
+  content: "";
+}
+
+.phaser-interior[data-active-trigger="interior.project-workstation"] .phaser-interior__dialog {
+  --notice-ink: #392919;
+  --notice-muted: #69513a;
+  --notice-accent: #8d3c27;
+  --notice-paper: #eddbad;
+  position: relative;
+  border: 5px solid #715035;
+  border-radius: 4px;
+  background: linear-gradient(rgb(51 32 19 / 91%), rgb(57 37 22 / 93%)),
+    url("../public/assets/landmarks/noticeboard-backdrop.webp") center / cover;
+  box-shadow: inset 0 0 0 2px #b48a56, 0 18px 70px rgb(12 8 4 / 60%);
+}
+
+.phaser-interior[data-active-trigger="interior.project-workstation"] .phaser-interior__dialog-head {
+  border-bottom: 1px solid #916c43;
+  background: linear-gradient(#63462e, #463020);
+}
+
+.phaser-interior[data-active-trigger="interior.project-workstation"] .phaser-interior__dialog-title {
+  color: #f3ddb1;
+  letter-spacing: 0.06em;
+}
+
+.phaser-interior[data-active-trigger="interior.project-workstation"] .phaser-interior__close,
+.phaser-interior[data-active-trigger="interior.project-workstation"] .phaser-interior__back,
+.phaser-interior__portfolio-arrow {
+  border-color: #b38a55;
+  border-radius: 2px;
+  background: #30251a;
+  color: #f3ddb1;
+}
+
+.phaser-interior__portfolio-intro {
+  padding: 22px 30px 14px;
+  border: 0;
+}
+
+.phaser-interior__portfolio-intro .phaser-interior__eyebrow {
+  color: #dcb982;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+.phaser-interior__portfolio-headline {
+  color: #f7e7c7;
+  font-family: "Songti SC", "STSong", "Noto Serif SC", serif;
+  font-size: 27px;
+  font-weight: 700;
+}
+
+.phaser-interior__portfolio-description {
+  color: #d3bea0;
+}
+
+.phaser-interior__portfolio-navigation {
+  padding-block: 8px 14px;
+  background: #3e2b1d;
+  box-shadow: 0 4px 8px rgb(27 16 8 / 16%);
+}
+
+.phaser-interior__dialog-body .phaser-interior__portfolio-count {
+  color: #ddc6a0;
+}
+
+.phaser-interior__projects {
+  padding-top: 18px;
+  padding-bottom: 30px;
+  scrollbar-color: #b38a55 #302116;
+}
+
+.phaser-interior__project {
+  position: relative;
+  border: 0;
+  filter: drop-shadow(3px 6px 3px rgb(15 9 4 / 42%));
+}
+
+.phaser-interior__project::before,
+.phaser-interior__project-sheet::before {
+  position: absolute;
+  z-index: 1;
+  top: 9px;
+  left: calc(50% - 5px);
+  width: 10px;
+  height: 10px;
+  border: 1px solid #64432b;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 25%, #ead4aa, #9c754e 45%, #4d3625 80%);
+  box-shadow: 1px 3px 2px rgb(59 36 16 / 40%);
+  pointer-events: none;
+  content: "";
+}
+
+.phaser-interior__project-open,
+.phaser-interior__project-sheet {
+  border: 1px solid #b99760;
+  background:
+    radial-gradient(ellipse at 3% 0, rgb(138 88 34 / 22%), transparent 52%),
+    radial-gradient(ellipse at 100% 90%, rgb(153 100 38 / 19%), transparent 50%),
+    repeating-linear-gradient(0deg, transparent 0 3px, rgb(101 66 28 / 3%) 3px 4px),
+    linear-gradient(105deg, #e1c995, #f4e6c4 43%, #ebd9af 78%, #dcc08a);
+  color: var(--notice-ink);
+  box-shadow: inset 0 0 22px rgb(137 87 30 / 16%);
+}
+
+.phaser-interior__project-open {
+  min-height: 392px;
+  padding: 34px 22px 24px;
+  gap: 20px;
+  clip-path: polygon(0 0, 29% 1px, 60% 0, 100% 2px, 99.7% 32%, 100% 74%,
+    99% 100%, 83% 99.5%, 62% 100%, 42% 99.4%, 19% 100%, 0 99%, 0.4% 66%, 0 31%);
+}
+
+.phaser-interior__project:nth-child(even) .phaser-interior__project-open {
+  background-color: #e0ca9d;
+  background-blend-mode: multiply, normal, normal, normal;
+}
+
+.phaser-interior__project-open:focus-visible {
+  outline: 3px solid #8d3c27;
+  outline-offset: -5px;
+}
+
+.phaser-interior__project-open:hover .phaser-interior__project-title {
+  color: #8d3c27;
+}
+
+.phaser-interior__project-title {
+  color: var(--notice-ink);
+  font-family: "Songti SC", "STSong", "Noto Serif SC", serif;
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.phaser-interior__project-category {
+  color: var(--notice-accent);
+}
+
+.phaser-interior__project-status {
+  color: #53613c;
+}
+
+.phaser-interior__project-title-row > .phaser-interior__icon {
+  color: #8d3c27;
+}
+
+.phaser-interior__project-summary,
+.phaser-interior__project-description,
+.phaser-interior__project-highlight-list {
+  color: var(--notice-muted);
+}
+
+.phaser-interior__project-tags {
+  color: #765b3d;
+}
+
+.phaser-interior__project-tags > li + li::before {
+  color: #a2865c;
+}
+
+.phaser-interior__project-image,
+.phaser-interior__project-detail-image {
+  padding: 4px;
+  border: 1px solid #b99b6b;
+  border-radius: 0;
+  background: #fcf2d8;
+  box-shadow: 0 2px 4px rgb(88 56 22 / 17%);
+}
+
+.phaser-interior__project-sheet {
+  position: relative;
+  margin: 22px 30px 30px;
+  padding-top: 16px;
+  box-shadow: 3px 7px 12px rgb(20 12 5 / 38%);
+}
+
+.phaser-interior__project-headline {
+  color: var(--notice-ink);
+  font-family: "Songti SC", "STSong", "Noto Serif SC", serif;
+}
+
+.phaser-interior__dialog .phaser-interior__project-link {
+  border-color: #a76645;
+  color: #843921;
+}
+
+.phaser-interior__dialog .phaser-interior__project-link:hover {
+  color: #3d2814;
+}
+
+.phaser-interior__project-section-title,
+.phaser-interior__project-highlight-list > li::marker {
+  color: #8d3c27;
+}
+
+@media (max-width: 680px) {
+  .phaser-interior[data-active-trigger="interior.project-workstation"] .phaser-interior__dialog {
+    border-width: 3px;
+  }
+
+  .phaser-interior__portfolio-intro {
+    padding: 18px 18px 10px;
+  }
+
+  .phaser-interior__portfolio-headline {
+    font-size: 23px;
+  }
+
+  .phaser-interior__project-open {
+    min-height: 365px;
+    padding: 30px 18px 22px;
+  }
+
+  .phaser-interior__project-title {
+    font-size: 21px;
+  }
+
+  .phaser-interior__project-sheet {
+    margin: 14px 12px 20px;
+  }
+}
+
+@media (max-height: 500px) {
+  .phaser-interior__portfolio-intro {
+    padding-block: 8px;
+  }
+
+  .phaser-interior__portfolio-headline {
+    font-size: 20px;
+  }
+
+  .phaser-interior__portfolio-navigation {
+    padding-block: 6px;
+  }
+}
+
+/* A readable address card opened from the green mailbox. */
+.phaser-interior[data-active-trigger="interior.contact-mailbox"] .phaser-interior__dialog {
+  width: min(760px, 100%);
+  border-color: #b29459;
+}
+
+.phaser-interior[data-active-trigger="interior.contact-mailbox"] .phaser-interior__dialog-body {
+  background: #efe4c9;
+  color: #3d4235;
+}
+
+.phaser-interior__contact-intro {
+  color: #52604b;
+  font-size: 15px;
+}
+
+.phaser-interior__contact-list {
+  display: grid;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.phaser-interior__contact-item {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 16px;
+  min-height: 62px;
+  padding: 10px 0;
+  border-top: 1px solid #cbbf9f;
+}
+
+.phaser-interior__contact-platform {
+  color: #68725a;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.phaser-interior__contact-value {
+  min-width: 0;
+  color: #283f33;
+  font-size: 15px;
+  font-weight: 550;
+  overflow-wrap: anywhere;
+}
+
+.phaser-interior__dialog .phaser-interior__contact-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 5px;
+  color: #315b48;
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.phaser-interior__contact-link .phaser-interior__icon {
+  width: 15px;
+  height: 15px;
+  flex-basis: 15px;
+}
+
+.phaser-interior__contact-link:focus-visible {
+  outline: 2px solid #315b48;
+  outline-offset: 3px;
+}
+
+.phaser-interior__dialog-body .phaser-interior__contact-note {
+  margin-top: 18px;
+  color: #70735d;
+  font-size: 12px;
+}
+
+@media (max-width: 560px) {
+  .phaser-interior__contact-item {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 0 8px;
+    padding-block: 10px 4px;
+  }
+
+  .phaser-interior__contact-value {
+    font-size: 14px;
+  }
+
+  .phaser-interior__contact-link {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .phaser-interior__contact-item[data-contact-kind="text"] {
+    padding-bottom: 10px;
+  }
+}

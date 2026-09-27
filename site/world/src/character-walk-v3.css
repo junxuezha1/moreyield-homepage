@@ -1,0 +1,14 @@
+.character-walk-v3 {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+  transform-origin: 50% 100%;
+  will-change: contents;
+}
+
+.character-walk-v3[data-available="false"] {
+  visibility: hidden;
+}

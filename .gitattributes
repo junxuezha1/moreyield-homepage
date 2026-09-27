@@ -1,0 +1,2 @@
+# Preserve the upstream license's original CRLF bytes.
+site/world/vendor/PHASER-LICENSE.txt -text whitespace=cr-at-eol

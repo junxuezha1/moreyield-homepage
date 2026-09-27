@@ -1,0 +1,821 @@
+:root {
+  color-scheme: dark;
+  font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  font-synthesis: none;
+  --ink: #071526;
+  --ink-soft: #10263c;
+  --frost: #eefcff;
+  --glow: #a8efff;
+  --portal: #2db6ff;
+  --portal-hot: #d8fbff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--ink);
+}
+
+body {
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+button {
+  color: inherit;
+  font: inherit;
+}
+
+.experience {
+  position: fixed;
+  inset: 0;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--ink);
+  cursor: default;
+}
+
+.experience::before {
+  position: absolute;
+  z-index: 0;
+  inset: -1.5rem;
+  background: url("./public/assets/exterior-portal.png") center / cover no-repeat;
+  content: "";
+  filter: blur(16px) saturate(0.9) brightness(0.82);
+  transform: scale(1.035);
+}
+
+.experience[data-phase="idle"] {
+  cursor: pointer;
+}
+
+.scene {
+  position: absolute;
+  z-index: 1;
+  overflow: hidden;
+  will-change: left, top, width, height;
+}
+
+.final-integration-host {
+  z-index: 11;
+  opacity: 1;
+  transition: opacity 360ms steps(4, end);
+}
+
+.final-integration-host[data-mounting="true"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.scene__background {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  filter: blur(7px) saturate(0.92) brightness(0.74);
+  transition:
+    filter 1800ms cubic-bezier(0.22, 0.74, 0.16, 1);
+  will-change: filter;
+}
+
+.experience:is([data-phase="idle"], [data-phase="awaken"], [data-phase="walking"], [data-phase="portal"], [data-phase="complete"], [data-phase="loading-interior"])
+  .scene__background {
+  filter: blur(0) saturate(1.03) brightness(1);
+}
+
+.portal {
+  position: absolute;
+  left: 72.7%;
+  top: 57.2%;
+  width: 18%;
+  height: 54%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0.34;
+  mix-blend-mode: screen;
+  filter: blur(0.08rem);
+  transition: opacity 1600ms ease;
+}
+
+.experience:not([data-phase="loading"]) .portal {
+  opacity: 0.88;
+}
+
+.portal__core,
+.portal__ring,
+.portal__spark {
+  position: absolute;
+  display: block;
+}
+
+.portal__core {
+  inset: 4% 9% 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at center, rgba(238, 255, 255, 0.9) 0, rgba(155, 237, 255, 0.62) 9%, rgba(62, 190, 255, 0.38) 27%, rgba(20, 117, 194, 0.16) 48%, transparent 74%);
+  box-shadow:
+    0 0 1rem rgba(216, 251, 255, 0.52),
+    0 0 3.8rem rgba(45, 182, 255, 0.48),
+    0 0 6rem rgba(67, 186, 255, 0.22);
+  filter: blur(0.24rem);
+  animation: portal-breathe 2600ms ease-in-out infinite;
+}
+
+.portal__ring {
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, transparent 28%, rgba(188, 246, 255, 0.22) 44%, transparent 70%);
+  filter: blur(0.42rem);
+  opacity: 0;
+}
+
+.portal__ring--one {
+  inset: 7% 15% 1%;
+  animation: portal-ring 2400ms ease-out infinite;
+}
+
+.portal__ring--two {
+  inset: 14% 24% 8%;
+  animation: portal-ring 2400ms 1200ms ease-out infinite;
+}
+
+.portal__spark {
+  width: 4%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(224, 252, 255, 0.8);
+  box-shadow: 0 0 1rem var(--glow);
+  filter: blur(0.14rem);
+  transform: rotate(45deg);
+}
+
+.portal__spark--one {
+  left: 16%;
+  top: 28%;
+  animation: spark-drift 2100ms ease-in-out infinite;
+}
+
+.portal__spark--two {
+  right: 11%;
+  top: 52%;
+  animation: spark-drift 2600ms 600ms ease-in-out infinite reverse;
+}
+
+.portal__spark--three {
+  left: 31%;
+  top: 76%;
+  animation: spark-drift 1900ms 300ms ease-in-out infinite;
+}
+
+.player {
+  position: absolute;
+  left: 28%;
+  top: 76.4%;
+  z-index: 3;
+  width: calc(5.8% * var(--exterior-actor-size-compensation, 1));
+  height: auto;
+  aspect-ratio: 98 / 115;
+  opacity: 0;
+  transform: translate(-50%, var(--player-foot-offset, -100%)) scale(var(--entry-scale, 1));
+  transform-origin: 50% 100%;
+  pointer-events: none;
+  will-change: left, top, opacity, transform;
+}
+
+.player[data-visible="true"] {
+  opacity: 1;
+  transition: opacity 520ms ease;
+}
+
+.player[data-visible="true"][data-awake="false"] .player__sprite {
+  filter: brightness(0.88) saturate(0.86) drop-shadow(0 0.28rem 0.2rem rgba(1, 13, 27, 0.38));
+}
+
+.player[data-awake="true"] .player__sprite {
+  animation: player-awaken 420ms steps(3, end) both;
+}
+
+.player[data-entering="true"] {
+  filter: brightness(1.45) drop-shadow(0 0 0.8rem rgba(111, 225, 255, 0.9));
+}
+
+.player__sprite {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  transform-origin: 50% 100%;
+  filter: drop-shadow(0 0.28rem 0.2rem rgba(1, 13, 27, 0.38));
+}
+
+.player__shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -1.5%;
+  width: 60%;
+  height: 7%;
+  border-radius: 50%;
+  background: rgba(2, 17, 24, 0.34);
+  filter: blur(0.18rem);
+  transform: translateX(-50%);
+}
+
+.atmosphere,
+.portal-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.atmosphere--veil {
+  z-index: 4;
+  background: rgba(4, 18, 34, 0.24);
+  backdrop-filter: blur(1px);
+  transition: opacity 1600ms cubic-bezier(0.22, 0.74, 0.16, 1);
+}
+
+.experience:is([data-phase="idle"], [data-phase="awaken"], [data-phase="walking"], [data-phase="portal"], [data-phase="complete"], [data-phase="loading-interior"])
+  .atmosphere--veil {
+  opacity: 0.08;
+}
+
+.atmosphere--vignette {
+  z-index: 5;
+  background: radial-gradient(ellipse at 54% 49%, transparent 42%, rgba(2, 11, 22, 0.52) 115%);
+  opacity: 0.72;
+  transition: opacity 1800ms ease;
+}
+
+.experience:is([data-phase="walking"], [data-phase="portal"], [data-phase="complete"], [data-phase="loading-interior"])
+  .atmosphere--vignette {
+  opacity: 0.4;
+}
+
+.atmosphere--grain {
+  z-index: 6;
+  opacity: 0.12;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.3'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+}
+
+.portal-flash {
+  z-index: 10;
+  opacity: 0;
+  background:
+    radial-gradient(
+      ellipse 18% 34% at var(--portal-screen-x, 74%) var(--portal-screen-y, 58%),
+      rgba(255, 255, 255, 0.98) 0,
+      rgba(207, 248, 255, 0.8) 8%,
+      rgba(72, 194, 255, 0.4) 27%,
+      rgba(7, 21, 38, 0) 72%
+    ),
+    radial-gradient(
+      circle at var(--portal-screen-x, 74%) var(--portal-screen-y, 58%),
+      rgba(255, 255, 255, 0.26) 0,
+      rgba(72, 194, 255, 0.16) 18%,
+      rgba(7, 21, 38, 0) 60%
+    );
+  filter: blur(0.12rem);
+}
+
+.portal-flash::after {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 22% 38% at var(--portal-screen-x, 74%) var(--portal-screen-y, 58%),
+    rgba(6, 20, 33, 0) 0,
+    rgba(6, 20, 33, 0.22) 48%,
+    rgba(6, 20, 33, 0.92) 100%
+  );
+  content: "";
+  opacity: 0;
+}
+
+.experience[data-phase="portal"] .portal-flash {
+  animation: portal-flash 1500ms cubic-bezier(0.16, 0.75, 0.22, 1) both;
+}
+
+.experience[data-phase="portal"] .portal-flash::after {
+  animation: portal-shutter 1500ms cubic-bezier(0.5, 0, 0.2, 1) both;
+}
+
+.experience[data-phase="complete"] .portal-flash {
+  opacity: 1;
+}
+
+.experience[data-phase="complete"] .portal-flash::after {
+  opacity: 1;
+}
+
+.mountain-title {
+  position: absolute;
+  display: block;
+  height: auto;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  image-rendering: pixelated;
+  filter: drop-shadow(0 3px 0 rgb(17 61 100 / 24%));
+  transition: opacity 900ms ease;
+}
+
+.experience:is([data-phase="idle"], [data-phase="awaken"], [data-phase="walking"], [data-phase="portal"], [data-phase="complete"], [data-phase="loading-interior"])
+  .mountain-title {
+  opacity: 0.96;
+}
+
+.loading {
+  position: absolute;
+  z-index: 20;
+  left: 50%;
+  bottom: max(2rem, calc(env(safe-area-inset-bottom) + 1rem));
+  width: min(9rem, 34vw);
+  height: 2px;
+  overflow: hidden;
+  background: rgba(238, 252, 255, 0.18);
+  transform: translateX(-50%);
+  transition: opacity 360ms ease;
+}
+
+.personal-home {
+  position: absolute;
+  z-index: 12;
+  top: max(14px, env(safe-area-inset-top));
+  left: max(14px, env(safe-area-inset-left));
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 13px;
+  border: 1px solid rgb(238 252 255 / 48%);
+  border-radius: 2px;
+  background: rgb(11 24 28 / 88%);
+  box-shadow: 3px 3px 0 rgb(2 8 7 / 28%);
+  color: #eefcff;
+  font: 600 12px/1.35 ui-monospace, "PingFang SC", "Microsoft YaHei", monospace;
+  text-decoration: none;
+  white-space: nowrap;
+  touch-action: manipulation;
+  backdrop-filter: blur(8px);
+}
+
+.experience[data-phase="interior"] .personal-home {
+  top: calc(max(14px, env(safe-area-inset-top)) + 72px);
+  border-color: rgb(241 196 83 / 38%);
+  background: rgb(18 29 25 / 88%);
+  color: #f2f3df;
+}
+
+.experience:has(.phaser-interior:is([data-panel-open="true"], [data-menu-open="true"])) .personal-home {
+  visibility: hidden;
+}
+
+.personal-home:hover,
+.personal-home:focus-visible {
+  border-color: var(--glow);
+  outline: 2px solid var(--glow);
+  outline-offset: 3px;
+}
+
+.music-control {
+  position: absolute;
+  z-index: 12;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  display: grid;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgb(238 252 255 / 48%);
+  border-radius: 4px;
+  background: rgb(11 24 28 / 88%);
+  box-shadow: 3px 3px 0 rgb(2 8 7 / 28%);
+  color: #eefcff;
+  cursor: pointer;
+  touch-action: manipulation;
+  backdrop-filter: blur(8px);
+}
+
+.experience[data-phase="interior"] .music-control {
+  top: calc(max(14px, env(safe-area-inset-top)) + 56px);
+}
+
+.experience:has(.phaser-interior:is([data-panel-open="true"], [data-menu-open="true"])) .music-control {
+  visibility: hidden;
+}
+
+.music-control:hover,
+.music-control:focus-visible {
+  border-color: #a8efff;
+  outline: 2px solid #a8efff;
+  outline-offset: 3px;
+}
+
+.music-control[data-state="playing"] { color: #a8efff; }
+.music-control[data-state="loading"] { opacity: 0.65; }
+.music-control:not([data-state="playing"]) .music-control__waves,
+.music-control[data-state="playing"] .music-control__mute { display: none; }
+
+.loading__line {
+  display: block;
+  width: 42%;
+  height: 100%;
+  background: var(--glow);
+  box-shadow: 0 0 0.6rem var(--portal);
+  animation: loading-line 1100ms ease-in-out infinite;
+}
+
+.experience:not([data-phase="loading"]) .loading {
+  opacity: 0;
+}
+
+.enter {
+  position: absolute;
+  z-index: 12;
+  bottom: max(42px, calc(env(safe-area-inset-bottom) + 28px));
+  left: 50%;
+  display: inline-flex;
+  min-width: 196px;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  padding: 12px 20px;
+  transform: translate(-50%, 6px);
+  border: 2px solid rgba(216, 251, 255, 0.9);
+  border-radius: 3px;
+  outline: 0;
+  background: rgba(7, 21, 38, 0.9);
+  box-shadow:
+    5px 5px 0 rgba(2, 13, 28, 0.5),
+    0 0 24px rgba(45, 182, 255, 0.16);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 320ms ease,
+    transform 320ms steps(3, end),
+    background-color 160ms ease;
+}
+
+.enter[hidden],
+.replay[hidden] {
+  display: none;
+}
+
+.experience:is([data-phase="idle"], [data-phase="error"]) .enter {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+}
+
+.enter__label {
+  color: var(--frost);
+  font: 800 15px/1.1 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  letter-spacing: 0;
+  text-align: center;
+}
+
+.enter__icon {
+  color: var(--portal-hot);
+  font-size: 12px;
+  filter: drop-shadow(0 0 6px var(--portal));
+}
+
+.enter:hover {
+  background: rgba(13, 56, 81, 0.94);
+}
+
+.enter:active {
+  transform: translate(calc(-50% + 3px), 3px);
+  box-shadow: 2px 2px 0 rgba(2, 13, 28, 0.5);
+}
+
+.enter:focus-visible {
+  outline: 3px solid var(--glow);
+  outline-offset: 4px;
+}
+
+.journey-feedback {
+  position: absolute;
+  z-index: 32;
+  bottom: max(26px, calc(env(safe-area-inset-bottom) + 18px));
+  left: 50%;
+  display: flex;
+  min-width: 232px;
+  min-height: 44px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 13px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(216, 251, 255, 0.6);
+  border-radius: 3px;
+  background: rgba(7, 21, 38, 0.9);
+  box-shadow: 4px 4px 0 rgba(2, 13, 28, 0.42);
+  color: var(--frost);
+  font: 700 12px/1 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  backdrop-filter: blur(7px);
+}
+
+.journey-feedback[hidden],
+.journey-feedback__skip[hidden],
+.world-transition[hidden] {
+  display: none;
+}
+
+.journey-feedback__signal {
+  display: flex;
+  gap: 3px;
+}
+
+.journey-feedback__signal i {
+  display: block;
+  width: 4px;
+  height: 10px;
+  background: var(--portal-hot);
+  box-shadow: 0 0 7px rgba(45, 182, 255, 0.72);
+  animation: journey-signal 720ms steps(3, end) infinite;
+}
+
+.journey-feedback__signal i:nth-child(2) {
+  animation-delay: 120ms;
+}
+
+.journey-feedback__signal i:nth-child(3) {
+  animation-delay: 240ms;
+}
+
+.journey-feedback__label {
+  flex: 1;
+  white-space: nowrap;
+}
+
+.journey-feedback__skip {
+  display: grid;
+  width: 34px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid rgba(216, 251, 255, 0.36);
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--portal-hot);
+  font: 800 18px/1 ui-monospace, monospace;
+  cursor: pointer;
+}
+
+.journey-feedback__skip:hover,
+.journey-feedback__skip:focus-visible {
+  border-color: var(--glow);
+  outline: 2px solid var(--glow);
+  outline-offset: 2px;
+}
+
+.world-transition {
+  position: absolute;
+  z-index: 30;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(6, 20, 33, 0.2) 0 6px, rgba(95, 214, 238, 0.18) 6px 8px),
+    rgba(6, 20, 33, 0.84);
+  opacity: 0;
+}
+
+.world-transition__label {
+  padding: 8px 12px;
+  border: 1px solid rgba(216, 251, 255, 0.68);
+  background: rgba(7, 21, 38, 0.8);
+  color: var(--frost);
+  font: 800 12px/1 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+.world-transition[data-mode="exit"] {
+  animation: world-pixel-out 560ms steps(6, end) forwards;
+}
+
+.world-transition[data-mode="reveal"] {
+  animation: world-pixel-in 520ms steps(6, end) forwards;
+}
+
+.replay {
+  position: absolute;
+  z-index: 14;
+  top: max(1rem, env(safe-area-inset-top));
+  right: max(1rem, env(safe-area-inset-right));
+  display: grid;
+  width: 2.6rem;
+  height: 2.6rem;
+  place-items: center;
+  border: 1px solid rgba(216, 251, 255, 0.34);
+  border-radius: 50%;
+  background: rgba(7, 21, 38, 0.5);
+  box-shadow: 0 0.6rem 1.7rem rgba(2, 13, 28, 0.24);
+  color: var(--frost);
+  font-size: 1.35rem;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-0.4rem);
+  transition:
+    opacity 350ms ease,
+    transform 350ms ease,
+    background-color 180ms ease;
+}
+
+.experience:is([data-phase="complete"], [data-phase="interior"]) .replay {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.experience[data-phase="interior"] .replay {
+  display: none;
+}
+
+.replay:hover,
+.replay:focus-visible {
+  background: rgba(13, 56, 81, 0.72);
+  outline: 2px solid var(--glow);
+  outline-offset: 0.2rem;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes loading-line {
+  0% {
+    transform: translateX(-120%);
+  }
+  55%,
+  100% {
+    transform: translateX(340%);
+  }
+}
+
+@keyframes enter-pulse {
+  0%,
+  100% {
+    opacity: 0.28;
+    transform: scale(0.65);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes player-awaken {
+  0% { filter: brightness(0.86) saturate(0.84) drop-shadow(0 0.28rem 0.2rem rgba(1, 13, 27, 0.38)); }
+  55% { filter: brightness(1.36) saturate(1.08) drop-shadow(0 0 0.9rem rgba(168, 239, 255, 0.72)); }
+  100% { filter: drop-shadow(0 0.28rem 0.2rem rgba(1, 13, 27, 0.38)); }
+}
+
+@keyframes journey-signal {
+  0%, 100% { opacity: 0.25; transform: scaleY(0.55); }
+  50% { opacity: 1; transform: scaleY(1); }
+}
+
+@keyframes world-pixel-out {
+  0% { opacity: 0; clip-path: inset(0 0 100%); }
+  100% { opacity: 0.92; clip-path: inset(0); }
+}
+
+@keyframes world-pixel-in {
+  0% { opacity: 0.92; clip-path: inset(0); }
+  100% { opacity: 0; clip-path: inset(100% 0 0); }
+}
+
+@keyframes portal-breathe {
+  0%,
+  100% {
+    opacity: 0.48;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.88;
+    transform: scale(1.035);
+  }
+}
+
+@keyframes portal-ring {
+  0% {
+    opacity: 0;
+    transform: scale(0.76);
+  }
+  24% {
+    opacity: 0.48;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.24);
+  }
+}
+
+@keyframes spark-drift {
+  0%,
+  100% {
+    opacity: 0.24;
+    translate: 0 0;
+  }
+  50% {
+    opacity: 0.9;
+    translate: 0 -160%;
+  }
+}
+
+@keyframes portal-flash {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  36% {
+    opacity: 0.96;
+    transform: scale(1);
+  }
+  72% {
+    opacity: 0.78;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.14);
+  }
+}
+
+@keyframes portal-shutter {
+  0%,
+  58% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 700px) {
+  .player {
+    width: calc(5.8% * var(--exterior-actor-size-compensation, 1));
+  }
+
+  .enter {
+    bottom: max(82px, calc(env(safe-area-inset-bottom) + 70px));
+    width: min(214px, calc(100vw - 40px));
+    min-height: 54px;
+  }
+
+  .journey-feedback {
+    bottom: max(74px, calc(env(safe-area-inset-bottom) + 62px));
+    width: min(246px, calc(100vw - 32px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portal__core,
+  .portal__ring,
+  .portal__spark,
+  .loading__line,
+  .journey-feedback__signal i {
+    animation-duration: 1ms;
+    animation-iteration-count: 1;
+  }
+
+  .scene__background,
+  .atmosphere--veil,
+  .mountain-title {
+    transition-duration: 400ms;
+  }
+
+  .experience[data-phase="portal"] .portal-flash,
+  .experience[data-phase="portal"] .portal-flash::after {
+    animation-duration: 700ms;
+  }
+
+  .world-transition[data-mode="exit"],
+  .world-transition[data-mode="reveal"] {
+    animation-duration: 180ms;
+  }
+}

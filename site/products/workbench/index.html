@@ -1,0 +1,2750 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="MoreYield Workbench — 本地桌面 AI 工作台，把业务信息交付成 PPT、Excel、报价表和合同。"
+    />
+    <title>MoreYield Workbench</title>
+    <link rel="icon" href="assets/brand/app-light.png" />
+    <style>
+      :root {
+        --blue: #339cff;
+        --blue-deep: #137ee8;
+        --blue-soft: #e9f4ff;
+        --text: #1f1d1a;
+        --text-2: #57534d;
+        --text-3: #8a857e;
+        --bg: #ffffff;
+        --warm: #f7f6f4;
+        --warm-2: #f1efec;
+        --line: #e7e4df;
+        --line-2: #ece9e4;
+        --radius: 12px;
+        --radius-lg: 22px;
+        --pill: 100px;
+        --ease-spring: cubic-bezier(0.34, 1.42, 0.64, 1);
+        --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+        --ease-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+        --sh-card: 0 1px 2px rgba(31, 29, 26, 0.05), 0 8px 24px rgba(31, 29, 26, 0.06);
+        --sh-hover: 0 2px 6px rgba(31, 29, 26, 0.07), 0 20px 48px rgba(31, 29, 26, 0.12);
+        --sh-thumb: 0 18px 50px rgba(25, 23, 28, 0.13);
+        --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+      }
+
+      /* ---- 滚动进场系统（初始隐藏样式全部 scope 在 .js-anim 下，禁 JS 时内容完整可见） ---- */
+      .js-anim .reveal {
+        opacity: 0;
+        transform: translateY(22px);
+        transition:
+          opacity 0.62s var(--ease-out),
+          transform 0.62s var(--ease-out);
+        will-change: opacity, transform;
+      }
+      .js-anim .reveal.in-view {
+        opacity: 1;
+        transform: none;
+      }
+      .js-anim .reveal-group > * {
+        opacity: 0;
+        transform: translateY(22px);
+        transition:
+          opacity 0.62s var(--ease-out),
+          transform 0.62s var(--ease-out);
+        will-change: opacity, transform;
+      }
+      .js-anim .reveal-group.in-view > * {
+        opacity: 1;
+        transform: none;
+      }
+      .js-anim .reveal-group.in-view > *:nth-child(2) {
+        transition-delay: 0.07s;
+      }
+      .js-anim .reveal-group.in-view > *:nth-child(3) {
+        transition-delay: 0.14s;
+      }
+      .js-anim .reveal-group.in-view > *:nth-child(4) {
+        transition-delay: 0.21s;
+      }
+      .js-anim .reveal-group.in-view > *:nth-child(5) {
+        transition-delay: 0.28s;
+      }
+      .js-anim .reveal-group.in-view > *:nth-child(6) {
+        transition-delay: 0.35s;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 80px;
+      }
+
+      body {
+        font-family: var(--font);
+        color: var(--text);
+        background: var(--bg);
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        overflow-x: clip;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      img {
+        max-width: 100%;
+        display: block;
+      }
+
+      /* ---------- 按钮 ---------- */
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 15px 27px;
+        border-radius: var(--pill);
+        background: var(--blue);
+        color: #fff;
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 6px 16px rgba(51, 156, 255, 0.28);
+        transition:
+          transform 0.24s var(--ease-spring),
+          box-shadow 0.24s var(--ease-out),
+          background 0.2s var(--ease-out);
+      }
+      .button:hover {
+        transform: translateY(-2px);
+        background: var(--blue-deep);
+        box-shadow: 0 12px 28px rgba(51, 156, 255, 0.38);
+      }
+      .button:active {
+        transform: translateY(0) scale(0.98);
+      }
+      .button.ghost {
+        background: #fff;
+        color: var(--text);
+        border: 1px solid var(--line);
+        box-shadow: var(--sh-card);
+      }
+      .button.ghost:hover {
+        background: var(--warm);
+        box-shadow: var(--sh-hover);
+      }
+      .button.small {
+        padding: 10px 19px;
+        font-size: 15px;
+      }
+      .text-link {
+        font-weight: 700;
+        font-size: 15px;
+        color: var(--text-2);
+        transition: color 0.2s var(--ease-out);
+      }
+      .text-link:hover {
+        color: var(--blue-deep);
+      }
+
+      /* ---------- 导航 ---------- */
+      .nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(255, 255, 255, 0.72);
+        backdrop-filter: saturate(180%) blur(14px);
+        -webkit-backdrop-filter: saturate(180%) blur(14px);
+        border-bottom: 1px solid transparent;
+        transition:
+          border-color 0.3s var(--ease-out),
+          box-shadow 0.3s var(--ease-out),
+          background 0.3s var(--ease-out);
+      }
+      .nav.scrolled {
+        border-bottom-color: var(--line);
+        box-shadow:
+          0 1px 0 rgba(31, 29, 26, 0.02),
+          0 8px 24px rgba(31, 29, 26, 0.05);
+      }
+      .nav-inner {
+        width: min(1160px, 100%);
+        margin: 0 auto;
+        padding: 15px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 19px;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+      }
+      .brand img {
+        width: 32px;
+        height: 32px;
+        object-fit: contain;
+      }
+      .nav-links {
+        display: flex;
+        gap: 30px;
+      }
+      .nav-links a {
+        font-size: 15px;
+        font-weight: 650;
+        color: var(--text-2);
+        transition: color 0.2s var(--ease-out);
+      }
+      .nav-links a:hover {
+        color: var(--text);
+      }
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      /* ---------- 通用 section ---------- */
+      .section {
+        padding: 108px 24px;
+      }
+      .section.warm {
+        background: var(--warm);
+      }
+      .section-inner {
+        width: min(1160px, 100%);
+        margin: 0 auto;
+      }
+      .section-head {
+        max-width: 720px;
+        margin: 0 auto 60px;
+        text-align: center;
+      }
+      .section-kicker {
+        display: inline-block;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        color: var(--blue-deep);
+        background: var(--blue-soft);
+        padding: 6px 14px;
+        border-radius: var(--pill);
+        margin-bottom: 20px;
+      }
+      .section-title {
+        font-size: clamp(30px, 4.2vw, 46px);
+        font-weight: 900;
+        line-height: 1.15;
+        letter-spacing: -0.015em;
+        text-wrap: balance;
+      }
+      .section-sub {
+        margin-top: 18px;
+        font-size: 18px;
+        font-weight: 550;
+        line-height: 1.6;
+        color: var(--text-2);
+      }
+
+      /* ---------- Hero ---------- */
+      .hero {
+        position: relative;
+        min-height: 90vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 90px 24px 70px;
+        overflow: hidden;
+        background: radial-gradient(120% 90% at 50% 0%, #fbfbfd 0%, #f5f6f8 45%, var(--warm) 100%);
+      }
+      .hero-copy {
+        position: relative;
+        z-index: 5;
+        text-align: center;
+        max-width: 920px;
+      }
+      /* 文本可读性：中央柔光把漂移墙压暗一档 */
+      .hero-copy::before {
+        content: '';
+        position: absolute;
+        inset: -80px -140px;
+        z-index: -1;
+        background: radial-gradient(60% 60% at 50% 45%, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0) 100%);
+        pointer-events: none;
+      }
+      .brand-motion {
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 16px);
+        width: 120px;
+        height: 120px;
+        transform: translateX(-50%);
+        pointer-events: none;
+      }
+      .brand-motion-animation,
+      .brand-motion-static {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .brand-motion-animation {
+        display: block;
+        object-fit: contain;
+      }
+      .brand-motion-static {
+        display: none;
+        object-fit: contain;
+      }
+      .brand-motion.is-fallback .brand-motion-animation {
+        display: none;
+      }
+      .brand-motion.is-fallback .brand-motion-static {
+        display: block;
+      }
+      .hero-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 750;
+        color: var(--text-2);
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid var(--line);
+        padding: 8px 16px;
+        border-radius: var(--pill);
+        box-shadow: var(--sh-card);
+        margin-bottom: 26px;
+      }
+      .hero-pill::before {
+        content: '';
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--blue);
+        box-shadow: 0 0 0 4px rgba(51, 156, 255, 0.18);
+      }
+      .hero-title {
+        display: grid;
+        justify-items: center;
+        font-family: 'Songti SC', 'STSong', 'Noto Serif CJK SC', serif;
+        font-size: 128px;
+        font-weight: 900;
+        line-height: 0.84;
+        letter-spacing: 0;
+      }
+      .hero-title-line {
+        position: relative;
+        display: block;
+        width: max-content;
+        padding: 0 0.06em 0.1em;
+        color: #14283f;
+        -webkit-text-stroke: 1px #14283f;
+        text-shadow:
+          2px 2px 0 #fff,
+          7px 8px 0 rgba(51, 156, 255, 0.72),
+          0 20px 36px rgba(20, 40, 63, 0.2);
+        transform: translateX(-28px) rotate(-1.4deg);
+      }
+      .hero-title-line:last-child {
+        color: #fff;
+        -webkit-text-stroke: 3px #14283f;
+        text-shadow:
+          4px 4px 0 #14283f,
+          10px 10px 0 rgba(51, 156, 255, 0.78),
+          0 22px 38px rgba(20, 40, 63, 0.2);
+        transform: translateX(34px) rotate(1deg);
+      }
+      .hero-sub {
+        margin: 26px auto 0;
+        max-width: 560px;
+        font-size: clamp(17px, 2.2vw, 20px);
+        font-weight: 550;
+        line-height: 1.6;
+        color: var(--text-2);
+      }
+      .hero-cta {
+        margin-top: 36px;
+        display: flex;
+        gap: 14px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      /* ---------- Hero 漂移封面墙（签名动效） ---------- */
+      .top-visual {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        overflow: hidden;
+        pointer-events: none;
+      }
+      .thumb {
+        position: absolute;
+        left: var(--tx);
+        top: var(--ty);
+        width: var(--tw);
+        transform: translate(-50%, -50%);
+        z-index: var(--tz, 1);
+        pointer-events: auto;
+      }
+      .thumb-inner {
+        border-radius: 13px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: var(--sh-thumb);
+        animation: thumb-drift-a var(--tdur, 17s) ease-in-out var(--tdelay, 0s) infinite alternate;
+        will-change: transform;
+      }
+      .thumb-inner.b {
+        animation-name: thumb-drift-b;
+      }
+      .thumb-inner.c {
+        animation-name: thumb-drift-c;
+      }
+      /* 层深：只用尺寸 / 不透明度 / 饱和度表达，不用模糊 */
+      .thumb.near {
+        --tw: clamp(190px, 20vw, 268px);
+        --tz: 3;
+      }
+      .thumb.mid {
+        --tw: clamp(155px, 16vw, 216px);
+        --tz: 2;
+        opacity: 0.95;
+        filter: saturate(0.88);
+      }
+      .thumb.far {
+        --tw: clamp(126px, 13vw, 176px);
+        --tz: 1;
+        opacity: 0.84;
+        filter: saturate(0.78);
+      }
+      /* 悬停聚焦：抬升 + 阴影加深 + 层级提升（触屏与降级动效下不生效） */
+      @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+        .thumb {
+          transition:
+            transform 0.34s var(--ease-spring),
+            opacity 0.28s var(--ease-out),
+            filter 0.28s var(--ease-out);
+        }
+        .thumb-inner {
+          transition: box-shadow 0.34s var(--ease-out);
+        }
+        .thumb:hover {
+          z-index: 9;
+          transform: translate(-50%, -50%) scale(1.04);
+          opacity: 1;
+          filter: none;
+        }
+        .thumb:hover .thumb-inner {
+          box-shadow: 0 26px 68px rgba(25, 23, 28, 0.24);
+        }
+      }
+
+      @keyframes thumb-drift-a {
+        0% {
+          transform: translate(0, 0);
+        }
+        52% {
+          transform: translate(10px, -12px);
+        }
+        100% {
+          transform: translate(-11px, 9px);
+        }
+      }
+      @keyframes thumb-drift-b {
+        0% {
+          transform: translate(0, 0);
+        }
+        47% {
+          transform: translate(-12px, 10px);
+        }
+        100% {
+          transform: translate(9px, -11px);
+        }
+      }
+      @keyframes thumb-drift-c {
+        0% {
+          transform: translate(0, 0);
+        }
+        55% {
+          transform: translate(11px, 9px);
+        }
+        100% {
+          transform: translate(-9px, -12px);
+        }
+      }
+
+      /* ---------- 交付物封面卡（纯 CSS，无外部图片，内容为示例真实文本） ---------- */
+      .art {
+        aspect-ratio: 4 / 3;
+        padding: 14px 15px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        line-height: 1.35;
+      }
+      /* 卡内文字随层深缩放 */
+      .thumb.near .art {
+        font-size: 12px;
+      }
+      .thumb.mid .art {
+        font-size: 10px;
+      }
+      .thumb.far .art {
+        font-size: 8.5px;
+      }
+
+      .art.ppt {
+        background:
+          linear-gradient(118deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 34%, transparent 55%),
+          linear-gradient(150deg, #0e2038 0%, #2c5a94 100%);
+        color: #fff;
+      }
+      .art.ppt .kick {
+        width: 2.6em;
+        height: 0.38em;
+        border-radius: 3px;
+        background: var(--blue);
+        margin-bottom: 0.3em;
+      }
+      .art.ppt .pt {
+        font-size: 1.22em;
+        font-weight: 800;
+        letter-spacing: 0.01em;
+        line-height: 1.3;
+      }
+      .art.ppt .ps {
+        font-size: 0.84em;
+        font-weight: 650;
+        color: rgba(255, 255, 255, 0.6);
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .art.ppt .pfoot {
+        margin-top: auto;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+      }
+      .art.ppt .pdots {
+        display: flex;
+        align-items: center;
+        gap: 0.42em;
+        padding-bottom: 0.24em;
+      }
+      .art.ppt .pdots i {
+        width: 0.44em;
+        height: 0.44em;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.32);
+      }
+      .art.ppt .pdots i:first-child {
+        background: var(--blue);
+      }
+      .art.ppt .pchart {
+        display: flex;
+        align-items: flex-end;
+        gap: 0.34em;
+        height: 2.5em;
+      }
+      .art.ppt .pchart i {
+        width: 0.66em;
+        border-radius: 2px 2px 0 0;
+        background: linear-gradient(rgba(51, 156, 255, 0.95), rgba(123, 192, 255, 0.5));
+      }
+      .art.ppt .pchart i:nth-child(1) {
+        height: 46%;
+      }
+      .art.ppt .pchart i:nth-child(2) {
+        height: 72%;
+      }
+      .art.ppt .pchart i:nth-child(3) {
+        height: 56%;
+      }
+      .art.ppt .pchart i:nth-child(4) {
+        height: 92%;
+      }
+      /* 浅色 PPT 变体：白底 + 左侧蓝色母版条 */
+      .art.ppt.light {
+        background:
+          linear-gradient(118deg, rgba(19, 126, 232, 0.08) 0%, transparent 46%),
+          #fff;
+        border-left: 0.55em solid var(--blue);
+        color: var(--text);
+      }
+      .art.ppt.light .ps {
+        color: var(--text-3);
+      }
+      .art.ppt.light .pdots i {
+        background: #d8dce2;
+      }
+      .art.ppt.light .pdots i:first-child {
+        background: var(--blue);
+      }
+
+      .art.xls {
+        background: #fff;
+        gap: 0;
+        color: var(--text-2);
+      }
+      .art.xls .trow {
+        display: grid;
+        grid-template-columns: 1.15fr 1fr 0.85fr;
+        gap: 0.5em;
+        padding: 0.42em 0;
+        border-bottom: 1px solid #eef0f2;
+        font-size: 0.84em;
+        font-weight: 650;
+        line-height: 1.25;
+        white-space: nowrap;
+      }
+      .art.xls .trow span:nth-child(n + 2) {
+        text-align: right;
+      }
+      .art.xls .trow.head {
+        color: #2f7d4f;
+        font-weight: 800;
+      }
+      .art.xls .bars {
+        margin-top: auto;
+        display: flex;
+        align-items: flex-end;
+        gap: 6px;
+        height: 38px;
+        padding-top: 8px;
+      }
+      .art.xls .bars i {
+        flex: 1;
+        border-radius: 3px 3px 0 0;
+        background: linear-gradient(var(--blue), #7bc0ff);
+      }
+      .art.xls .bars i:nth-child(1) {
+        height: 45%;
+      }
+      .art.xls .bars i:nth-child(2) {
+        height: 72%;
+      }
+      .art.xls .bars i:nth-child(3) {
+        height: 54%;
+      }
+      .art.xls .bars i:nth-child(4) {
+        height: 90%;
+      }
+      .art.xls .bars i:nth-child(5) {
+        height: 66%;
+      }
+
+      .art.quote {
+        background: #fff;
+        color: var(--text-2);
+      }
+      .art.quote .qhead {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 1em;
+        padding-bottom: 0.4em;
+        border-bottom: 2px solid var(--blue);
+        font-size: 1.06em;
+        font-weight: 800;
+        color: var(--text);
+        white-space: nowrap;
+      }
+      .art.quote .qhead small {
+        font-size: 0.66em;
+        font-weight: 750;
+        letter-spacing: 0.08em;
+        color: var(--text-3);
+      }
+      .art.quote .qrow {
+        display: flex;
+        justify-content: space-between;
+        gap: 1em;
+        padding: 0.52em 0;
+        border-bottom: 1px dashed #e6e8ec;
+        font-size: 0.84em;
+        font-weight: 650;
+        white-space: nowrap;
+      }
+      .art.quote .qrow.total {
+        border-bottom: none;
+        margin-top: auto;
+        font-size: 0.94em;
+        font-weight: 800;
+        color: var(--blue-deep);
+      }
+
+      .art.doc {
+        background: #fff;
+        color: var(--text-2);
+      }
+      .art.doc .dh {
+        font-size: 1.05em;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 0.15em;
+      }
+      .art.doc .dl {
+        font-size: 0.78em;
+        font-weight: 550;
+        line-height: 1.6;
+        color: var(--text-3);
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .art.doc .sign {
+        margin-top: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-top: 6px;
+      }
+      .art.doc .stamp {
+        width: 2em;
+        height: 2em;
+        border-radius: 50%;
+        border: 2px solid rgba(51, 156, 255, 0.5);
+        flex: none;
+      }
+      .art.doc .sign svg {
+        flex: 1;
+        height: 1.6em;
+        color: #46587a;
+      }
+      .thumb-cap {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 12px;
+        border-top: 1px solid var(--line-2);
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-2);
+        white-space: nowrap;
+      }
+      .thumb.mid .thumb-cap {
+        font-size: 11px;
+        padding: 8px 11px;
+      }
+      .thumb.far .thumb-cap {
+        font-size: 10px;
+        padding: 7px 10px;
+        gap: 6px;
+      }
+      .thumb-cap b {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--blue);
+      }
+
+      /* ---------- 一句话条带 ---------- */
+      .big-line {
+        padding: 96px 24px;
+        text-align: center;
+      }
+      .big-line-inner {
+        width: min(1000px, 100%);
+        margin: 0 auto;
+      }
+      .big-line h2 {
+        font-size: clamp(28px, 4.4vw, 50px);
+        font-weight: 850;
+        line-height: 1.25;
+        letter-spacing: -0.015em;
+      }
+      /* ---------- 流程：滚动堆叠面板（sticky stack 签名交互） ---------- */
+      .stack-wrap {
+        width: min(1120px, 100%);
+        margin: 0 auto;
+      }
+      .stack-panel {
+        position: sticky;
+        border-radius: 30px;
+        padding: clamp(28px, 3.8vw, 48px) clamp(30px, 4.4vw, 58px);
+        min-height: min(46vh, 460px);
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: 1.02fr 1fr;
+        gap: clamp(26px, 4vw, 54px);
+        align-items: center;
+        box-shadow:
+          0 -6px 30px rgba(31, 29, 26, 0.05),
+          0 26px 60px rgba(31, 29, 26, 0.13);
+      }
+      .stack-panel + .stack-panel {
+        margin-top: 34px;
+      }
+      .stack-panel.s1 {
+        top: 92px;
+        background: #f1f0f2;
+        color: var(--text);
+      }
+      .stack-panel.s2 {
+        top: 110px;
+        background: linear-gradient(158deg, #3aa0ff 0%, #1f8bef 100%);
+        color: #fff;
+      }
+      .stack-panel.s3 {
+        top: 128px;
+        background: linear-gradient(158deg, #14294a 0%, #0d1c34 100%);
+        color: #fff;
+      }
+      .stack-step {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.01em;
+        margin-bottom: 16px;
+      }
+      .stack-step i {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-style: normal;
+        font-size: 13px;
+        background: rgba(255, 255, 255, 0.18);
+      }
+      .stack-panel.s1 .stack-step {
+        color: var(--blue-deep);
+      }
+      .stack-panel.s1 .stack-step i {
+        background: var(--blue-soft);
+        color: var(--blue-deep);
+      }
+      .nb {
+        white-space: nowrap;
+      }
+      .stack-h {
+        font-size: clamp(29px, 4.1vw, 48px);
+        font-weight: 900;
+        line-height: 1.12;
+        letter-spacing: -0.02em;
+        text-wrap: balance;
+      }
+      .stack-p {
+        margin-top: 16px;
+        max-width: 460px;
+        font-size: clamp(16px, 1.9vw, 19px);
+        font-weight: 500;
+        line-height: 1.6;
+      }
+      .stack-panel.s1 .stack-p {
+        color: var(--text-2);
+      }
+      .stack-panel.s2 .stack-p,
+      .stack-panel.s3 .stack-p {
+        color: rgba(255, 255, 255, 0.84);
+      }
+      /* 左栏补充要点行：平衡左右视觉密度 */
+      .stack-meta {
+        margin-top: 22px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 18px;
+        font-size: 13.5px;
+        font-weight: 700;
+      }
+      .stack-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .stack-meta span::before {
+        content: '✓';
+        font-size: 12px;
+        font-weight: 900;
+      }
+      .stack-panel.s1 .stack-meta {
+        color: var(--text-2);
+      }
+      .stack-panel.s1 .stack-meta span::before {
+        color: var(--blue-deep);
+      }
+      .stack-panel.s2 .stack-meta,
+      .stack-panel.s3 .stack-meta {
+        color: rgba(255, 255, 255, 0.78);
+      }
+      .stack-panel.s2 .stack-meta span::before {
+        color: #fff;
+      }
+      .stack-panel.s3 .stack-meta span::before {
+        color: #8ecbff;
+      }
+      /* ---------- 实机窗口外壳（复刻应用截图的窗口语言：交通灯 + 居中标题 + 白色表面） ---------- */
+      .win {
+        background: #fff;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(16, 22, 40, 0.2);
+      }
+      .win-bar {
+        position: relative;
+        display: flex;
+        align-items: center;
+        height: 38px;
+        padding: 0 14px;
+        background: #fbfbfc;
+        border-bottom: 1px solid #ececf0;
+      }
+      .win-dots {
+        display: flex;
+        gap: 7px;
+      }
+      .win-dots i {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+      }
+      .win-dots i:nth-child(1) {
+        background: #ff5f57;
+      }
+      .win-dots i:nth-child(2) {
+        background: #febc2e;
+      }
+      .win-dots i:nth-child(3) {
+        background: #28c840;
+      }
+      .win-title {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: #3c3f45;
+        white-space: nowrap;
+      }
+      .win-title img {
+        width: 14px;
+        height: 14px;
+        object-fit: contain;
+      }
+      .win-body {
+        position: relative;
+        padding: 16px 18px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 11px;
+      }
+
+      /* ---------- 实机操作面板（面板内容 = 应用界面元素，最终态全部写在标记里） ---------- */
+      .stack-visual {
+        border-radius: 14px;
+      }
+      .sv-title {
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--text);
+        letter-spacing: -0.01em;
+      }
+      .sv-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .sv-chip {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-2);
+        background: #f5f6f8;
+        border: 1px solid #e8eaee;
+        border-radius: var(--pill);
+        padding: 8px 14px;
+        transition:
+          background 0.28s var(--ease-out),
+          border-color 0.28s var(--ease-out),
+          color 0.28s var(--ease-out);
+      }
+      .sv-chip.on {
+        background: var(--blue);
+        border-color: var(--blue);
+        color: #fff;
+      }
+      .sv-field {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #f5f6f8;
+        border: 1px solid #e8eaee;
+        border-radius: 9px;
+        padding: 12px 14px;
+        transition:
+          background 0.25s var(--ease-out),
+          border-color 0.25s var(--ease-out),
+          box-shadow 0.25s var(--ease-out);
+      }
+      .sv-field.focus {
+        background: #fff;
+        border-color: var(--blue);
+        box-shadow: 0 0 0 3px rgba(51, 156, 255, 0.16);
+      }
+      .sv-field .lab {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-3);
+        min-width: 52px;
+      }
+      .sv-field .val {
+        flex: 1;
+        font-size: 13px;
+        font-weight: 650;
+        color: var(--text);
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .sv-prompt {
+        background: #10233d;
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12.5px;
+        line-height: 1.75;
+        color: #cfe4ff;
+      }
+      .sv-prompt .k {
+        color: #7bc0ff;
+        font-weight: 700;
+      }
+      .sv-term {
+        background: #0a1526;
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12.5px;
+        line-height: 1.8;
+        color: #9fb4d4;
+      }
+      .sv-term .g {
+        color: #57d38c;
+      }
+      .sv-file {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 12px 14px;
+      }
+      .sv-file .ic {
+        width: 30px;
+        height: 36px;
+        border-radius: 6px;
+        background: var(--blue-soft);
+        border: 1px solid rgba(51, 156, 255, 0.4);
+        flex: none;
+      }
+      .sv-file .nm {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text);
+      }
+      .sv-file .mt {
+        font-size: 12px;
+        color: var(--text-3);
+      }
+      .sv-badge {
+        display: inline-block;
+        margin-left: 8px;
+        padding: 1px 7px;
+        border-radius: 5px;
+        font-size: 11px;
+        font-style: normal;
+        font-weight: 700;
+        color: var(--blue-deep);
+        background: var(--blue-soft);
+        vertical-align: 1px;
+      }
+
+      /* ---------- 面板动效原语（初始隐藏只由 JS 加类，全部 scope 在 .js-anim 下） ---------- */
+      .js-anim .al {
+        transition:
+          opacity 0.4s var(--ease-out),
+          transform 0.4s var(--ease-out);
+      }
+      .js-anim .anim-hide {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      .js-anim .typing::after {
+        content: '';
+        display: inline-block;
+        width: 1.5px;
+        height: 1.05em;
+        margin-left: 1px;
+        vertical-align: -0.18em;
+        background: var(--blue-deep);
+        animation: caret-blink 0.95s steps(1, end) infinite;
+      }
+      .js-anim .sv-term .typing::after,
+      .js-anim .sv-prompt .typing::after {
+        background: #cfe4ff;
+      }
+      @keyframes caret-blink {
+        0%,
+        55% {
+          opacity: 1;
+        }
+        56%,
+        100% {
+          opacity: 0;
+        }
+      }
+      /* 指针高亮点：柔和圆点从待机位缓动到目标控件（仅动画期间可见） */
+      .sv-cursor {
+        position: absolute;
+        z-index: 6;
+        left: 80%;
+        top: 78%;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: rgba(20, 40, 63, 0.3);
+        box-shadow:
+          0 0 0 6px rgba(20, 40, 63, 0.1),
+          0 2px 6px rgba(20, 40, 63, 0.25);
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        transition:
+          left 0.85s var(--ease-soft),
+          top 0.85s var(--ease-soft),
+          opacity 0.3s var(--ease-out),
+          transform 0.2s var(--ease-out);
+      }
+      .sv-cursor.jump {
+        transition: none;
+      }
+      .sv-cursor.show {
+        opacity: 1;
+      }
+      .sv-cursor.press {
+        transform: translate(-50%, -50%) scale(0.72);
+      }
+      .process-emph {
+        margin-top: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        font-size: 17px;
+        font-weight: 800;
+        color: var(--text);
+      }
+      .process-emph .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--blue);
+      }
+
+      /* ---------- 产品事实引用条（渐变扫光） ---------- */
+      .quote-bar {
+        padding: 92px 24px;
+        text-align: center;
+        background: var(--warm-2);
+      }
+      .quote-bar blockquote {
+        width: min(940px, 100%);
+        margin: 0 auto;
+        font-size: clamp(26px, 4vw, 42px);
+        font-weight: 850;
+        line-height: 1.32;
+        letter-spacing: -0.015em;
+      }
+      .quote-shimmer {
+        background: linear-gradient(
+          100deg,
+          var(--blue) 0%,
+          #8ecbff 25%,
+          var(--blue-deep) 50%,
+          #8ecbff 75%,
+          var(--blue) 100%
+        );
+        background-size: 200% 100%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+        animation: quote-pan 7s ease-in-out infinite;
+      }
+      @keyframes quote-pan {
+        0% {
+          background-position: 0% 50%;
+        }
+        100% {
+          background-position: 200% 50%;
+        }
+      }
+      .quote-foot {
+        margin-top: 26px;
+        font-size: 14px;
+        font-weight: 750;
+        letter-spacing: 0.01em;
+        color: var(--text-3);
+      }
+
+      /* ---------- 能力主控台（一个实机窗口：左侧能力列表 + 右侧实时演示台） ---------- */
+      .console {
+        width: min(980px, 100%);
+        margin: 0 auto;
+        border: 1px solid var(--line);
+      }
+      .console-body {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        align-items: stretch;
+      }
+      .crail {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 14px;
+        border-right: 1px solid #ececf0;
+        background: #fafafb;
+      }
+      .crail-row {
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+        text-align: left;
+        padding: 12px 12px 14px;
+        border: 1px solid transparent;
+        border-radius: 12px;
+        background: transparent;
+        cursor: pointer;
+        font-family: inherit;
+        transition:
+          background 0.25s var(--ease-out),
+          border-color 0.25s var(--ease-out),
+          box-shadow 0.25s var(--ease-out);
+      }
+      .crail-row:hover {
+        background: #f1f2f5;
+      }
+      .crail-row.active {
+        background: #fff;
+        border-color: #e7e9ee;
+        box-shadow: 0 2px 10px rgba(31, 29, 26, 0.06);
+      }
+      .crail-row:focus-visible {
+        outline: 2px solid var(--blue);
+        outline-offset: 2px;
+      }
+      .crail-ico {
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+        background: var(--blue-soft);
+        color: var(--blue-deep);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+        margin-top: 1px;
+      }
+      .crail-ico svg {
+        width: 17px;
+        height: 17px;
+      }
+      .crail-txt b {
+        display: block;
+        font-size: 14.5px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        color: var(--text);
+      }
+      .crail-txt small {
+        display: block;
+        margin-top: 3px;
+        font-size: 12.5px;
+        font-weight: 550;
+        line-height: 1.45;
+        color: var(--text-3);
+      }
+      /* 活动行进度条：随自动轮换周期推进，悬停 / 聚焦时暂停 */
+      .crail-prog {
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        bottom: 6px;
+        height: 3px;
+        border-radius: 2px;
+        background: rgba(51, 156, 255, 0.14);
+        overflow: hidden;
+        display: none;
+      }
+      .crail-prog i {
+        display: block;
+        height: 100%;
+        border-radius: 2px;
+        background: var(--blue);
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+      .js-anim .console.live .crail-row.active .crail-prog {
+        display: block;
+      }
+      .js-anim .console.live .crail-row.active .crail-prog i {
+        animation: cprog var(--cycle, 4s) linear forwards;
+      }
+      .js-anim .console.live.paused .crail-prog i {
+        animation-play-state: paused;
+      }
+      @keyframes cprog {
+        to {
+          transform: scaleX(1);
+        }
+      }
+      /* 右侧演示台：禁 JS 时四个能力的演示全部纵向铺开；.live 下只显示活动项 */
+      .cstages {
+        padding: 18px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+        min-width: 0;
+      }
+      .cstage {
+        display: flex;
+        flex-direction: column;
+        gap: 11px;
+        min-width: 0;
+      }
+      .js-anim .console.live .cstages {
+        justify-content: center;
+      }
+      .js-anim .console.live .cstage {
+        display: none;
+      }
+      .js-anim .console.live .cstage.active {
+        display: flex;
+        animation: stage-in 0.4s var(--ease-out);
+      }
+      @keyframes stage-in {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .cstage-k {
+        font-size: 12.5px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        color: var(--text-3);
+      }
+      /* 工作流清单：逐项打勾 */
+      .ck {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        background: #f5f6f8;
+        border: 1px solid #e8eaee;
+        border-radius: 9px;
+        font-size: 13.5px;
+        font-weight: 650;
+        color: var(--text-3);
+      }
+      .js-anim .ck {
+        transition: color 0.3s var(--ease-out);
+      }
+      .ck i {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 1.5px solid #c9cdd4;
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-style: normal;
+        font-size: 11px;
+        font-weight: 900;
+        color: transparent;
+      }
+      .js-anim .ck i {
+        transition:
+          background 0.3s var(--ease-out),
+          border-color 0.3s var(--ease-out),
+          color 0.3s var(--ease-out);
+      }
+      .ck.done {
+        color: var(--text);
+      }
+      .ck.done i {
+        background: var(--blue);
+        border-color: var(--blue);
+        color: #fff;
+      }
+
+      /* ---------- 深度功能 + 媒体 ---------- */
+      .deep-inner {
+        display: grid;
+        grid-template-columns: 1fr 1.1fr;
+        gap: 56px;
+        align-items: center;
+      }
+      .deep-copy h2 {
+        font-size: clamp(30px, 4.2vw, 46px);
+        font-weight: 900;
+        line-height: 1.15;
+        letter-spacing: -0.015em;
+      }
+      .deep-copy p {
+        margin: 20px 0 30px;
+        font-size: 18px;
+        font-weight: 500;
+        line-height: 1.65;
+        color: var(--text-2);
+      }
+
+      .media-slot {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: #fff;
+        overflow: hidden;
+        box-shadow: var(--sh-card);
+      }
+      .media-bar {
+        height: 40px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--line-2);
+        background: var(--warm);
+      }
+      .media-bar i {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: #dcd8d1;
+      }
+      .media-slot > img,
+      .media-slot > video {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .media-slot.media-single {
+        max-width: 920px;
+        margin: 0 auto;
+      }
+      .media-caption {
+        padding: 13px 16px;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-2);
+        border-top: 1px solid var(--line-2);
+      }
+
+      .media-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+
+      /* ---------- FAQ ---------- */
+      .faq-list {
+        width: min(820px, 100%);
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .faq-item {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        overflow: hidden;
+        background: #fff;
+        transition: background 0.2s var(--ease-out);
+      }
+      .faq-item[open] {
+        background: var(--warm);
+      }
+      .faq-item summary {
+        position: relative;
+        list-style: none;
+        cursor: pointer;
+        padding: 22px 62px 22px 24px;
+        font-size: 19px;
+        font-weight: 800;
+        line-height: 1.35;
+        letter-spacing: -0.01em;
+      }
+      .faq-item summary::-webkit-details-marker {
+        display: none;
+      }
+      .faq-item summary::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: 24px;
+        width: 14px;
+        height: 14px;
+        transform: translateY(-50%) rotate(0deg);
+        background:
+          linear-gradient(currentColor, currentColor) center / 100% 2px no-repeat,
+          linear-gradient(currentColor, currentColor) center / 2px 100% no-repeat;
+        color: #b3aea6;
+        transition:
+          transform 0.34s var(--ease-spring),
+          color 0.2s var(--ease-out);
+      }
+      .faq-item[open] summary::after {
+        transform: translateY(-50%) rotate(135deg);
+        color: var(--blue);
+      }
+      .faq-body {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.34s var(--ease-out);
+      }
+      .faq-item[open] .faq-body {
+        grid-template-rows: 1fr;
+      }
+      .faq-body > div {
+        overflow: hidden;
+      }
+      .faq-item p {
+        padding: 0 24px 24px;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 1.6;
+        color: var(--text-2);
+      }
+
+      /* ---------- Footer ---------- */
+      .footer {
+        padding: 64px 24px 40px;
+        border-top: 1px solid var(--line);
+      }
+      .footer-inner {
+        width: min(1160px, 100%);
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1.6fr 1fr;
+        gap: 44px;
+      }
+      .footer-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 20px;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+      }
+      .footer-brand img {
+        width: 30px;
+        height: 30px;
+        object-fit: contain;
+      }
+      .footer-note {
+        margin-top: 14px;
+        max-width: 340px;
+        font-size: 14.5px;
+        font-weight: 500;
+        line-height: 1.6;
+        color: var(--text-2);
+      }
+      .footer-col h4 {
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--text-3);
+        margin-bottom: 16px;
+      }
+      .footer-links {
+        display: flex;
+        flex-direction: column;
+        gap: 11px;
+      }
+      .footer-links a,
+      .footer-links span {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-2);
+      }
+      .footer-links a {
+        transition: color 0.2s var(--ease-out);
+      }
+      .footer-links a:hover {
+        color: var(--text);
+      }
+      .footer-bottom {
+        width: min(1160px, 100%);
+        margin: 44px auto 0;
+        padding-top: 24px;
+        border-top: 1px solid var(--line-2);
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        font-size: 13.5px;
+        font-weight: 500;
+        color: var(--text-3);
+      }
+
+      /* ---------- 响应式 ---------- */
+      @media (max-width: 1000px) {
+        .hero-title {
+          font-size: 108px;
+        }
+        .section {
+          padding: 84px 22px;
+        }
+        .deep-inner {
+          grid-template-columns: 1fr;
+          gap: 36px;
+        }
+        .console-body {
+          grid-template-columns: 250px 1fr;
+        }
+        .stack-panel {
+          grid-template-columns: 1fr;
+          gap: 26px;
+          min-height: auto;
+        }
+        .footer-inner {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      /* 窄屏下把贴边卡整体拉回视口内，避免文字被裁一半 */
+      @media (max-width: 860px) {
+        .top-visual .thumb:nth-child(3) {
+          --tx: 10% !important;
+        }
+        .top-visual .thumb:nth-child(4) {
+          --tx: 86% !important;
+        }
+      }
+
+      @media (min-width: 768px) and (max-height: 760px) {
+        .brand-motion {
+          bottom: calc(100% + 4px);
+          width: 72px;
+          height: 72px;
+        }
+        .thumb.hide-low-height {
+          display: none;
+        }
+      }
+
+      @media (max-width: 767px) {
+        .nav-links {
+          display: none;
+        }
+        .nav-inner {
+          padding: 13px 20px;
+        }
+        .hero {
+          min-height: 86vh;
+          padding: 74px 20px 56px;
+        }
+        .hero-copy {
+          width: 100%;
+        }
+        .brand-motion {
+          bottom: calc(100% + 12px);
+          width: 92px;
+          height: 92px;
+        }
+        .hero-title {
+          font-size: 64px;
+          line-height: 0.9;
+        }
+        .hero-title-line {
+          -webkit-text-stroke-width: 0.75px;
+          text-shadow:
+            1px 1px 0 #fff,
+            4px 5px 0 rgba(51, 156, 255, 0.72),
+            0 14px 24px rgba(20, 40, 63, 0.18);
+          transform: translateX(-12px) rotate(-1.4deg);
+        }
+        .hero-title-line:last-child {
+          -webkit-text-stroke-width: 2px;
+          text-shadow:
+            3px 3px 0 #14283f,
+            6px 6px 0 rgba(51, 156, 255, 0.78),
+            0 14px 24px rgba(20, 40, 63, 0.18);
+          transform: translateX(14px) rotate(1deg);
+        }
+        .hero-cta {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .hero-cta .button {
+          width: 100%;
+        }
+        .section {
+          padding: 68px 20px;
+        }
+        .section-head {
+          margin-bottom: 44px;
+        }
+        .big-line,
+        .quote-bar {
+          padding: 68px 20px;
+        }
+        .media-grid {
+          grid-template-columns: 1fr;
+        }
+        .console-body {
+          grid-template-columns: 1fr;
+        }
+        .crail {
+          border-right: none;
+          border-bottom: 1px solid #ececf0;
+        }
+        .cstages {
+          padding: 16px;
+        }
+        .stack-panel.s1 {
+          top: 72px;
+        }
+        .stack-panel.s2 {
+          top: 84px;
+        }
+        .stack-panel.s3 {
+          top: 96px;
+        }
+        .thumb.hide-mobile {
+          display: none;
+        }
+        .thumb.near {
+          --tw: clamp(150px, 42vw, 210px);
+        }
+        .thumb.mid {
+          --tw: clamp(128px, 36vw, 180px);
+        }
+        .top-visual .thumb:nth-child(1) {
+          --tx: 24% !important;
+        }
+        .top-visual .thumb:nth-child(2) {
+          --tx: 79% !important;
+        }
+        .top-visual .thumb:nth-child(3) {
+          --tx: 20% !important;
+        }
+        .top-visual .thumb:nth-child(4) {
+          --tx: 76% !important;
+        }
+        .footer-inner {
+          grid-template-columns: 1fr;
+          gap: 32px;
+        }
+        .footer-bottom {
+          flex-direction: column;
+        }
+      }
+
+      @media (max-width: 420px) {
+        .hero-title {
+          font-size: 56px;
+        }
+      }
+
+      /* ---------- 降级动效 ---------- */
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.001ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.001ms !important;
+        }
+        .thumb-inner,
+        .quote-shimmer {
+          animation: none !important;
+        }
+        .brand-motion-animation {
+          display: none;
+        }
+        .brand-motion-static {
+          display: block;
+        }
+        .js-anim .reveal,
+        .js-anim .reveal-group > * {
+          opacity: 1 !important;
+          transform: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="nav" role="banner">
+      <div class="nav-inner">
+        <a class="brand" href="#top" aria-label="MoreYield Workbench 首页">
+          <img src="assets/brand/app-light.png" alt="MoreYield 标志" />
+          <span>MoreYield</span>
+        </a>
+        <nav class="nav-links" aria-label="页面导航">
+          <a href="#flow">流程</a>
+          <a href="#features">能力</a>
+          <a href="#demo">演示</a>
+          <a href="#faq">常见问题</a>
+        </nav>
+        <div class="nav-actions">
+          <a class="text-link" href="../../index.html#notes">返回个人主页</a>
+          <a class="button small" href="#flow">开始了解</a>
+        </div>
+      </div>
+    </header>
+
+    <main id="top">
+      <!-- ===== Hero + 漂移封面墙 ===== -->
+      <section class="hero" aria-labelledby="hero-heading">
+        <div class="top-visual" aria-hidden="true">
+          <div class="thumb near" style="--tx: 13%; --ty: 26%; --tdur: 16s; --tdelay: -2s">
+            <div class="thumb-inner">
+              <div class="art ppt">
+                <span class="kick"></span>
+                <span class="pt">年度增长汇报</span>
+                <span class="ps">2026 财年 · 增长与经营</span>
+                <div class="pfoot">
+                  <span class="pdots"><i></i><i></i><i></i></span>
+                  <span class="pchart"><i></i><i></i><i></i><i></i></span>
+                </div>
+              </div>
+              <div class="thumb-cap"><b></b>年度增长汇报.pptx</div>
+            </div>
+          </div>
+          <div class="thumb mid" style="--tx: 86%; --ty: 30%; --tdur: 18s; --tdelay: -6s">
+            <div class="thumb-inner b">
+              <div class="art xls">
+                <div class="trow head"><span>月份</span><span>销售额</span><span>环比</span></div>
+                <div class="trow"><span>1月</span><span>86.4万</span><span>+12%</span></div>
+                <div class="trow"><span>2月</span><span>92.1万</span><span>+6.6%</span></div>
+                <div class="bars"><i></i><i></i><i></i><i></i><i></i></div>
+              </div>
+              <div class="thumb-cap"><b></b>销售数据分析.xlsx</div>
+            </div>
+          </div>
+          <div class="thumb far hide-low-height" style="--tx: 9%; --ty: 64%; --tdur: 15s; --tdelay: -9s">
+            <div class="thumb-inner c">
+              <div class="art quote">
+                <div class="qhead">报价单<small>QUOTATION</small></div>
+                <div class="qrow"><span>标准服务包</span><span>¥120,000</span></div>
+                <div class="qrow"><span>实施与部署</span><span>¥45,000</span></div>
+                <div class="qrow total"><span>合计</span><span>¥165,000</span></div>
+              </div>
+              <div class="thumb-cap"><b></b>企业服务报价.xlsx</div>
+            </div>
+          </div>
+          <div class="thumb near" style="--tx: 88%; --ty: 73%; --tdur: 17s; --tdelay: -4s">
+            <div class="thumb-inner b">
+              <div class="art doc">
+                <div class="dh">项目服务合同</div>
+                <div class="dl">甲方：星辰网络科技</div>
+                <div class="dl">服务范围、交付节点与验收标准</div>
+                <div class="sign">
+                  <span class="stamp"></span>
+                  <svg viewBox="0 0 60 16" fill="none">
+                    <path
+                      d="M2 11c6-8 9 4 14-3s7-5 12 1 8-7 13 0 9 2 17-6"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div class="thumb-cap"><b></b>项目服务合同.docx</div>
+            </div>
+          </div>
+          <div class="thumb mid hide-low-height" style="--tx: 21%; --ty: 84%; --tdur: 19s; --tdelay: -3s">
+            <div class="thumb-inner">
+              <div class="art ppt light">
+                <span class="kick"></span>
+                <span class="pt">季度经营复盘</span>
+                <span class="ps">Q2 经营分析 · 管理层汇报</span>
+                <div class="pfoot">
+                  <span class="pdots"><i></i><i></i><i></i></span>
+                  <span class="pchart"><i></i><i></i><i></i><i></i></span>
+                </div>
+              </div>
+              <div class="thumb-cap"><b></b>季度经营复盘.pptx</div>
+            </div>
+          </div>
+          <div class="thumb far hide-mobile hide-low-height" style="--tx: 71%; --ty: 14%; --tdur: 14s; --tdelay: -7s">
+            <div class="thumb-inner c">
+              <div class="art xls">
+                <div class="trow head"><span>渠道</span><span>消耗</span><span>ROI</span></div>
+                <div class="trow"><span>信息流</span><span>12.6万</span><span>3.4</span></div>
+                <div class="trow"><span>搜索</span><span>8.2万</span><span>4.1</span></div>
+                <div class="bars"><i></i><i></i><i></i><i></i><i></i></div>
+              </div>
+              <div class="thumb-cap"><b></b>投放效果台账.xlsx</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-copy">
+          <div class="brand-motion" id="brand-motion" aria-hidden="true">
+            <img class="brand-motion-animation" id="brand-motion-animation" src="assets/brand/app-motion.gif" alt="" />
+            <img class="brand-motion-static" src="assets/brand/app-light.png" alt="" />
+          </div>
+          <div class="hero-pill reveal">从业务字段开始</div>
+          <h1 class="hero-title reveal" id="hero-heading">
+            <span class="hero-title-line">想法进来</span>
+            <span class="hero-title-line">文件出去</span>
+          </h1>
+          <p class="hero-sub reveal">
+            把材料和要求丢给本地 Agent，拿到能接着改的 PPT、Excel、报价表和合同。
+          </p>
+          <div class="hero-cta reveal">
+            <a class="button" href="#flow">看 MoreYield 怎么工作</a>
+            <a class="button ghost" href="#features">了解能力</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 一句话条带 ===== -->
+      <section class="big-line" aria-label="产品一句话说明">
+        <div class="big-line-inner">
+          <h2 class="reveal">
+            你给信息，AI 给文件。
+          </h2>
+        </div>
+      </section>
+
+      <!-- ===== 流程 ===== -->
+      <section class="section warm" id="flow" aria-labelledby="flow-heading">
+        <div class="section-inner">
+          <div class="section-head">
+            <span class="section-kicker reveal">业务交付</span>
+            <h2 class="section-title reveal" id="flow-heading">三步，从想法到文件</h2>
+            <p class="section-sub reveal">
+              选任务、填几个字段，剩下的它来。
+            </p>
+          </div>
+          <div class="stack-wrap">
+            <article class="stack-panel s1">
+              <div class="stack-copy">
+                <div class="stack-step"><i>1</i>选任务</div>
+                <h3 class="stack-h">先挑要做的事</h3>
+                <p class="stack-p">PPT、Excel、报价表、合同，挑一个。这次做报价表。</p>
+                <div class="stack-meta"><span>模板现成</span><span>格式已定</span></div>
+              </div>
+              <div class="stack-visual win" aria-hidden="true" data-live="s1">
+                <div class="win-bar">
+                  <span class="win-dots"><i></i><i></i><i></i></span>
+                  <span class="win-title"><img src="assets/brand/app-light.png" alt="" />MoreYield Workbench</span>
+                </div>
+                <div class="win-body">
+                  <span class="sv-cursor"></span>
+                  <div class="sv-title">选择任务包</div>
+                  <div class="sv-chips">
+                    <span class="sv-chip">PPT 演示</span>
+                    <span class="sv-chip">Excel 报表</span>
+                    <span class="sv-chip on" data-pick>报价表</span>
+                    <span class="sv-chip">合同文本</span>
+                  </div>
+                  <div class="sv-field">
+                    <span class="lab">交付目标</span><span class="val tw">三个工作日内出报价初稿</span>
+                  </div>
+                  <div class="sv-field">
+                    <span class="lab">适用场景</span><span class="val tw">企业服务年度框架合作</span>
+                  </div>
+                </div>
+              </div>
+            </article>
+            <article class="stack-panel s2">
+              <div class="stack-copy">
+                <div class="stack-step"><i>2</i>填字段</div>
+                <h3 class="stack-h"><span class="nb">先把你的想法</span><span class="nb">告诉他</span></h3>
+                <p class="stack-p">客户是谁、做什么、有什么要求，填进去。发出去前，Prompt 给你过目。</p>
+                <div class="stack-meta"><span>Prompt 可预览</span><span>字段可复用</span></div>
+              </div>
+              <div class="stack-visual win" aria-hidden="true" data-live="s2">
+                <div class="win-bar">
+                  <span class="win-dots"><i></i><i></i><i></i></span>
+                  <span class="win-title"><img src="assets/brand/app-light.png" alt="" />MoreYield Workbench</span>
+                </div>
+                <div class="win-body">
+                  <div class="sv-title">业务字段</div>
+                  <div class="sv-field"><span class="lab">客户</span><span class="val tw">星辰网络科技</span></div>
+                  <div class="sv-field"><span class="lab">项目</span><span class="val tw">企业服务年度框架</span></div>
+                  <div class="sv-prompt">
+                    <div class="al"><span class="k">SYSTEM</span> 按报价表任务包组装 Prompt</div>
+                    <div class="al"><span class="k">FIELDS</span> 客户=星辰网络科技 · 项目=企业服务年度框架</div>
+                    <div class="al"><span class="k">OUTPUT</span> 可编辑 .xlsx</div>
+                  </div>
+                </div>
+              </div>
+            </article>
+            <article class="stack-panel s3">
+              <div class="stack-copy">
+                <div class="stack-step"><i>3</i>拿文件</div>
+                <h3 class="stack-h"><span class="nb">拿到</span><span class="nb">能接着改的</span><span class="nb">文件</span></h3>
+                <p class="stack-p">Codex 或 Claude 在你电脑上干活。文件到手随便改，改完归档。</p>
+                <div class="stack-meta"><span>本地执行</span><span>产物自动归档</span></div>
+              </div>
+              <div class="stack-visual win" aria-hidden="true" data-live="s3">
+                <div class="win-bar">
+                  <span class="win-dots"><i></i><i></i><i></i></span>
+                  <span class="win-title"><img src="assets/brand/app-light.png" alt="" />MoreYield Workbench</span>
+                </div>
+                <div class="win-body">
+                  <div class="sv-title">本地执行</div>
+                  <div class="sv-term">
+                    <div><span class="g">$</span> <span class="tw">codex run 报价表任务包</span></div>
+                    <div class="al"><span class="g">✓</span> 组装 Prompt</div>
+                    <div class="al"><span class="g">✓</span> 生成报价明细</div>
+                    <div class="al"><span class="g">✓</span> 校验输出</div>
+                  </div>
+                  <div class="sv-file al">
+                    <span class="ic"></span>
+                    <span
+                      ><span class="nm">企业服务报价.xlsx</span><br /><span class="mt">可继续编辑 · 已归档</span></span
+                    >
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+          <div class="process-emph reveal">
+            <span>选任务</span><span class="dot"></span><span>填字段</span><span class="dot"></span><span>拿文件</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 产品事实引用条（渐变扫光） ===== -->
+      <section class="quote-bar" aria-label="产品能力说明">
+        <blockquote class="reveal">
+          字段进，<span class="quote-shimmer">文件出</span>，全程在你电脑上跑。
+        </blockquote>
+        <div class="quote-foot reveal">MoreYield Workbench · 产品能力</div>
+      </section>
+
+      <!-- ===== 功能 4 宫格 ===== -->
+      <section class="section" id="features" aria-labelledby="features-heading">
+        <div class="section-inner">
+          <div class="section-head">
+            <span class="section-kicker reveal">核心能力</span>
+            <h2 class="section-title reveal" id="features-heading">它能帮你做什么</h2>
+          </div>
+          <div class="console win reveal" id="capability-console">
+            <div class="win-bar">
+              <span class="win-dots"><i></i><i></i><i></i></span>
+              <span class="win-title"><img src="assets/brand/app-light.png" alt="" />MoreYield Workbench</span>
+            </div>
+            <div class="console-body">
+              <div class="crail">
+                <button type="button" class="crail-row">
+                  <span class="crail-ico" aria-hidden="true">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <rect x="3" y="4" width="18" height="14" rx="2" />
+                      <path d="M8 21h8M12 18v3" />
+                    </svg>
+                  </span>
+                  <span class="crail-txt"><b>本地执行</b><small>材料和文件都在你电脑上</small></span>
+                  <span class="crail-prog" aria-hidden="true"><i></i></span>
+                </button>
+                <button type="button" class="crail-row">
+                  <span class="crail-ico" aria-hidden="true">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M8 6l-5 6 5 6M16 6l5 6-5 6" />
+                    </svg>
+                  </span>
+                  <span class="crail-txt"><b>Prompt 预览</b><small>发出去前，先看它要干什么</small></span>
+                  <span class="crail-prog" aria-hidden="true"><i></i></span>
+                </button>
+                <button type="button" class="crail-row">
+                  <span class="crail-ico" aria-hidden="true">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M12 20h9" />
+                      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                    </svg>
+                  </span>
+                  <span class="crail-txt"><b>可编辑产出</b><small>给的是源文件，随便改</small></span>
+                  <span class="crail-prog" aria-hidden="true"><i></i></span>
+                </button>
+                <button type="button" class="crail-row">
+                  <span class="crail-ico" aria-hidden="true">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M4 6h16M4 12h16M4 18h10" />
+                    </svg>
+                  </span>
+                  <span class="crail-txt"><b>内置工作流</b><small>步骤和检查项都装在任务包里</small></span>
+                  <span class="crail-prog" aria-hidden="true"><i></i></span>
+                </button>
+              </div>
+              <div class="cstages">
+                <div class="cstage">
+                  <div class="cstage-k">本地执行</div>
+                  <div class="sv-term">
+                    <div><span class="g">$</span> <span class="tw">codex run 报价表任务包</span></div>
+                    <div class="al"><span class="g">✓</span> 本地工作区就绪</div>
+                    <div class="al"><span class="g">✓</span> 读取业务材料</div>
+                    <div class="al"><span class="g">✓</span> 产出写入本地工作区</div>
+                  </div>
+                </div>
+                <div class="cstage">
+                  <div class="cstage-k">Prompt 预览</div>
+                  <div class="sv-prompt">
+                    <div class="al"><span class="k">SYSTEM</span> 按报价表任务包组装 Prompt</div>
+                    <div class="al"><span class="k">FIELDS</span> 客户=星辰网络科技 · 项目=企业服务年度框架</div>
+                    <div class="al"><span class="k">OUTPUT</span> 可编辑 .xlsx</div>
+                  </div>
+                </div>
+                <div class="cstage">
+                  <div class="cstage-k">可编辑产出</div>
+                  <div class="sv-file al">
+                    <span class="ic"></span>
+                    <span
+                      ><span class="nm">企业服务报价.xlsx<em class="sv-badge al">可继续编辑</em></span
+                      ><br /><span class="mt">今天 14:32 · 已归档</span></span
+                    >
+                  </div>
+                  <div class="sv-file al">
+                    <span class="ic"></span>
+                    <span
+                      ><span class="nm">年度增长汇报.pptx<em class="sv-badge al">可继续编辑</em></span
+                      ><br /><span class="mt">昨天 18:05 · 已归档</span></span
+                    >
+                  </div>
+                  <div class="sv-file al">
+                    <span class="ic"></span>
+                    <span
+                      ><span class="nm">项目服务合同.docx<em class="sv-badge al">可继续编辑</em></span
+                      ><br /><span class="mt">周三 10:21 · 已归档</span></span
+                    >
+                  </div>
+                </div>
+                <div class="cstage">
+                  <div class="cstage-k">内置工作流</div>
+                  <div class="ck done"><i>✓</i>定好输出格式</div>
+                  <div class="ck done"><i>✓</i>组装 Prompt</div>
+                  <div class="ck done"><i>✓</i>本地执行任务</div>
+                  <div class="ck done"><i>✓</i>校验并归档产出</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 深度功能 + 宣传图 ===== -->
+      <section class="section warm" aria-labelledby="deep-heading">
+        <div class="section-inner deep-inner">
+          <div class="deep-copy">
+            <span class="section-kicker reveal">一条链路</span>
+            <h2 class="reveal" id="deep-heading">本地工作台，开箱即用</h2>
+            <p class="reveal">
+              材料、字段、Prompt、产出文件，都在一个工作台里。
+            </p>
+          </div>
+          <div class="media-slot reveal">
+            <div class="media-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+            <img src="assets/media/promo.webp" alt="MoreYield 产品宣传图" loading="lazy" width="1920" height="1106" />
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 视频演示 ===== -->
+      <section class="section" id="demo" aria-labelledby="demo-heading">
+        <div class="section-inner">
+          <div class="section-head">
+            <span class="section-kicker reveal">动手看流程</span>
+            <h2 class="section-title reveal" id="demo-heading">看它怎么工作</h2>
+            <p class="section-sub reveal">从选任务到拿文件，完整走一遍。</p>
+          </div>
+          <div class="media-slot media-single reveal">
+            <div class="media-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+            <video
+              controls
+              preload="metadata"
+              playsinline
+              poster="assets/media/demo-poster.webp"
+              width="1588"
+              height="920"
+            >
+              <source src="assets/media/demo.mp4" type="video/mp4" />
+              当前环境不支持视频播放，可直接下载 assets/media/demo.mp4 查看完整演示。
+            </video>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 产品界面截图 ===== -->
+      <section class="section warm" id="screens" aria-labelledby="screens-heading">
+        <div class="section-inner">
+          <div class="section-head">
+            <span class="section-kicker reveal">真实界面</span>
+            <h2 class="section-title reveal" id="screens-heading">产品界面预览</h2>
+            <p class="section-sub reveal">后台就长这样。</p>
+          </div>
+          <div class="media-grid reveal-group">
+            <figure class="media-slot">
+              <div class="media-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+              <img src="assets/media/config-models.webp" alt="模型配置后台界面" loading="lazy" width="1920" height="1114" />
+              <figcaption class="media-caption">设置 — 模型配置</figcaption>
+            </figure>
+            <figure class="media-slot">
+              <div class="media-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+              <img src="assets/media/config-skills.webp" alt="能力扩展配置界面" loading="lazy" width="1920" height="1114" />
+              <figcaption class="media-caption">设置 — 能力扩展</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== FAQ ===== -->
+      <section class="section" id="faq" aria-labelledby="faq-heading">
+        <div class="section-inner">
+          <div class="section-head">
+            <span class="section-kicker reveal">常见问题</span>
+            <h2 class="section-title reveal" id="faq-heading">还想了解一下</h2>
+          </div>
+          <div class="faq-list">
+            <details class="faq-item">
+              <summary>能做哪些文件</summary>
+              <div class="faq-body">
+                <div>
+                  <p>
+                    PPT、Excel 分析、报价表、合同。每类一个任务包，填好字段就能跑。
+                  </p>
+                </div>
+              </div>
+            </details>
+            <details class="faq-item">
+              <summary>生成的文件能改吗</summary>
+              <div class="faq-body">
+                <div>
+                  <p>
+                    可以。给的都是源文件，打开就能改。
+                  </p>
+                </div>
+              </div>
+            </details>
+            <details class="faq-item">
+              <summary>要自己写 Prompt 吗</summary>
+              <div class="faq-body">
+                <div>
+                  <p>填表就行，Prompt 系统来拼。发出去前你能看、能改。</p>
+                </div>
+              </div>
+            </details>
+            <details class="faq-item">
+              <summary>文件存在哪</summary>
+              <div class="faq-body">
+                <div>
+                  <p>
+                    都在你电脑的本地工作区里。企业用户还能沉淀自己的模板。
+                  </p>
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer" role="contentinfo">
+      <div class="footer-inner">
+        <div class="footer-brand-col">
+          <div class="footer-brand">
+            <img src="assets/brand/app-light.png" alt="MoreYield 标志" /><span>MoreYield</span>
+          </div>
+          <p class="footer-note">本地 AI 工作台，把 PPT、Excel、报价表、合同的交付流程固定下来。</p>
+        </div>
+        <div class="footer-col">
+          <h4>产品</h4>
+          <div class="footer-links">
+            <a href="../../index.html#notes">返回个人主页</a>
+            <a href="#flow">流程</a>
+            <a href="#features">能力</a>
+            <a href="#demo">演示</a>
+            <a href="#faq">常见问题</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 MoreYield Workbench</span>
+        <span>本地 AI 交付工作台</span>
+      </div>
+    </footer>
+
+    <script>
+      // ---- 动效系统：进场 reveal / Nav 滚动态（零依赖，禁 JS 内容完整可见） ----
+      (function () {
+        var docEl = document.documentElement;
+        var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        docEl.classList.add('js-anim');
+
+        var brandMotion = document.getElementById('brand-motion');
+        var brandMotionAnimation = document.getElementById('brand-motion-animation');
+        if (brandMotion && brandMotionAnimation) {
+          var useStaticBrand = function () {
+            brandMotion.classList.add('is-fallback');
+          };
+          brandMotionAnimation.addEventListener('error', useStaticBrand, { once: true });
+        }
+
+        // 滚动进场：IntersectionObserver 给 .reveal / .reveal-group 加 .in-view
+        var targets = document.querySelectorAll('.reveal, .reveal-group');
+        if (reduce || !('IntersectionObserver' in window)) {
+          targets.forEach(function (el) {
+            el.classList.add('in-view');
+          });
+        } else {
+          var io = new IntersectionObserver(
+            function (entries) {
+              entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                  entry.target.classList.add('in-view');
+                  io.unobserve(entry.target);
+                }
+              });
+            },
+            { rootMargin: '0px 0px -8% 0px', threshold: 0.12 }
+          );
+          targets.forEach(function (el) {
+            io.observe(el);
+          });
+        }
+
+        // Hero 指针视差：封面墙整体反向平移 ±5px（rAF 节流；降级动效 / 触屏跳过；无 JS 页面依旧完整）
+        var hero = document.querySelector('.hero');
+        var wall = document.querySelector('.top-visual');
+        var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        if (hero && wall && !reduce && !coarse) {
+          var parX = 0;
+          var parY = 0;
+          var parRaf = 0;
+          var applyParallax = function () {
+            parRaf = 0;
+            wall.style.transform = 'translate(' + parX.toFixed(1) + 'px, ' + parY.toFixed(1) + 'px)';
+          };
+          hero.addEventListener(
+            'pointermove',
+            function (e) {
+              var r = hero.getBoundingClientRect();
+              parX = ((e.clientX - r.left) / r.width - 0.5) * -10;
+              parY = ((e.clientY - r.top) / r.height - 0.5) * -10;
+              if (!parRaf) parRaf = requestAnimationFrame(applyParallax);
+            },
+            { passive: true }
+          );
+          hero.addEventListener('pointerleave', function () {
+            parX = 0;
+            parY = 0;
+            if (!parRaf) parRaf = requestAnimationFrame(applyParallax);
+          });
+        }
+
+        // ---- 实机操作面板：小型时序引擎（等待 / 打字 / 逐行显现 / 指针高亮） ----
+        // 最终态内容全部写在标记里；这里只做「清空 → 重演」，reduced-motion 或无 IO 时整段跳过，页面保持静态最终态。
+        var supportsIO = 'IntersectionObserver' in window;
+
+        function rand(a, b) {
+          return a + Math.random() * (b - a);
+        }
+        function Seq() {
+          this.timers = [];
+        }
+        Seq.prototype.delay = function (ms, fn) {
+          this.timers.push(setTimeout(fn, ms));
+        };
+        Seq.prototype.stop = function () {
+          this.timers.forEach(clearTimeout);
+          this.timers = [];
+        };
+        Seq.prototype.run = function (steps, done) {
+          var self = this;
+          var i = 0;
+          (function next() {
+            if (i >= steps.length) {
+              if (done) done();
+              return;
+            }
+            steps[i++](self, next);
+          })();
+        };
+        function wait(ms) {
+          return function (s, next) {
+            s.delay(ms, next);
+          };
+        }
+        function call(fn) {
+          return function (s, next) {
+            fn();
+            next();
+          };
+        }
+        // 打字：40-70ms/字符抖动 + 光标闪烁（.typing 的 CSS caret），输入框获得焦点圈
+        function typeInto(el) {
+          return function (s, next) {
+            var field = el.closest('.sv-field');
+            el.classList.add('typing');
+            if (field) field.classList.add('focus');
+            var text = el.dataset.t;
+            var i = 0;
+            (function tick() {
+              i += 1;
+              el.textContent = text.slice(0, i);
+              if (i < text.length) s.delay(rand(40, 70), tick);
+              else
+                s.delay(260, function () {
+                  el.classList.remove('typing');
+                  if (field) field.classList.remove('focus');
+                  next();
+                });
+            })();
+          };
+        }
+        function showLine(el) {
+          return call(function () {
+            el.classList.remove('anim-hide');
+          });
+        }
+
+        // 面板状态：.tw = 打字元素（终态文本取自标记），.al = 逐行显现元素
+        function collect(root) {
+          var tws = [].slice.call(root.querySelectorAll('.tw'));
+          tws.forEach(function (el) {
+            el.dataset.t = el.textContent;
+          });
+          return { tws: tws, als: [].slice.call(root.querySelectorAll('.al')) };
+        }
+        function toStart(st) {
+          st.tws.forEach(function (el) {
+            el.textContent = '';
+            el.classList.remove('typing');
+          });
+          st.als.forEach(function (el) {
+            el.classList.add('anim-hide');
+          });
+        }
+        function toFinal(st) {
+          st.tws.forEach(function (el) {
+            el.textContent = el.dataset.t;
+            el.classList.remove('typing');
+          });
+          st.als.forEach(function (el) {
+            el.classList.remove('anim-hide');
+          });
+        }
+
+        // 通用控制器：入视口 ≥50% 开始重演，离开即停并恢复终态；播完停 3s 再循环
+        function livePanel(root, opts) {
+          var seq = new Seq();
+          var playing = false;
+          function play() {
+            seq.stop();
+            opts.reset();
+            seq.run(opts.steps(), function () {
+              seq.delay(3000, play);
+            });
+          }
+          var io = new IntersectionObserver(
+            function (entries) {
+              entries.forEach(function (en) {
+                if (en.isIntersecting && !playing) {
+                  playing = true;
+                  play();
+                } else if (!en.isIntersecting && playing) {
+                  playing = false;
+                  seq.stop();
+                  opts.final();
+                }
+              });
+            },
+            { threshold: 0.5 }
+          );
+          io.observe(root);
+        }
+
+        if (!reduce && supportsIO) {
+          document.querySelectorAll('[data-live]').forEach(function (root) {
+            var kind = root.getAttribute('data-live');
+            var st = collect(root);
+            var chip = root.querySelector('[data-pick]');
+            var cursor = root.querySelector('.sv-cursor');
+            var body = root.querySelector('.win-body');
+            function placeCursor(x, y, immediate) {
+              if (immediate) cursor.classList.add('jump');
+              cursor.style.left = x + 'px';
+              cursor.style.top = y + 'px';
+              if (immediate) {
+                void cursor.offsetWidth;
+                cursor.classList.remove('jump');
+              }
+            }
+            function buildSteps() {
+              var steps = [wait(420)];
+              if (kind === 's1') {
+                steps.push(
+                  call(function () {
+                    var b = body.getBoundingClientRect();
+                    placeCursor(b.width * 0.82, b.height * 0.8, true);
+                    cursor.classList.add('show');
+                  }),
+                  wait(340),
+                  call(function () {
+                    var b = body.getBoundingClientRect();
+                    var c = chip.getBoundingClientRect();
+                    placeCursor(c.left - b.left + c.width / 2, c.top - b.top + c.height / 2);
+                  }),
+                  wait(920),
+                  call(function () {
+                    cursor.classList.add('press');
+                    chip.classList.add('on');
+                  }),
+                  wait(200),
+                  call(function () {
+                    cursor.classList.remove('press');
+                  }),
+                  wait(340),
+                  call(function () {
+                    cursor.classList.remove('show');
+                  }),
+                  wait(260)
+                );
+              }
+              st.tws.forEach(function (el, i) {
+                if (i > 0) steps.push(wait(300));
+                steps.push(typeInto(el));
+              });
+              if (st.als.length) steps.push(wait(kind === 's3' ? 560 : 460));
+              st.als.forEach(function (el, i) {
+                if (i > 0) steps.push(wait(kind === 's3' ? 450 : 420));
+                steps.push(showLine(el));
+              });
+              return steps;
+            }
+            livePanel(root, {
+              reset: function () {
+                toStart(st);
+                if (chip) chip.classList.remove('on');
+                if (cursor) cursor.classList.remove('show', 'press');
+              },
+              final: function () {
+                toFinal(st);
+                if (chip) chip.classList.add('on');
+                if (cursor) cursor.classList.remove('show', 'press');
+              },
+              steps: buildSteps,
+            });
+          });
+        }
+
+        // ---- 能力主控台：自动轮换 + 点击切换 + 悬停 / 聚焦暂停 ----
+        var consoleEl = document.getElementById('capability-console');
+        if (consoleEl && !reduce && supportsIO) {
+          consoleEl.classList.add('live');
+          var rows = [].slice.call(consoleEl.querySelectorAll('.crail-row'));
+          var stages = [].slice.call(consoleEl.querySelectorAll('.cstage'));
+          var stageSt = stages.map(collect);
+          var CYCLE = 4000;
+          var idx = 0;
+          var timer = 0;
+          var startAt = 0;
+          var remainMs = CYCLE;
+          var running = false;
+          var hovered = false;
+          var focused = false;
+          var stageSeq = new Seq();
+
+          var stageChecks = stages.map(function (stage) {
+            return [].slice.call(stage.querySelectorAll('.ck'));
+          });
+          function stageFinal(i) {
+            toFinal(stageSt[i]);
+            stageChecks[i].forEach(function (el) {
+              el.classList.add('done');
+            });
+          }
+          function stageStart(i) {
+            toStart(stageSt[i]);
+            stageChecks[i].forEach(function (el) {
+              el.classList.remove('done');
+            });
+          }
+          function stageSteps(i) {
+            var steps = [wait(360)];
+            stageSt[i].tws.forEach(function (el) {
+              steps.push(typeInto(el), wait(430));
+            });
+            stageSt[i].als.forEach(function (el) {
+              steps.push(showLine(el), wait(340));
+            });
+            stageChecks[i].forEach(function (el) {
+              steps.push(
+                call(function () {
+                  el.classList.add('done');
+                }),
+                wait(420)
+              );
+            });
+            return steps;
+          }
+          function clearTimer() {
+            if (timer) {
+              clearTimeout(timer);
+              timer = 0;
+            }
+          }
+          function schedule(ms) {
+            clearTimer();
+            startAt = Date.now();
+            remainMs = ms;
+            timer = setTimeout(function () {
+              activate((idx + 1) % rows.length);
+            }, ms);
+          }
+          function activate(i) {
+            stageSeq.stop();
+            stageFinal(idx);
+            rows[idx].classList.remove('active');
+            stages[idx].classList.remove('active');
+            idx = i;
+            rows[idx].classList.add('active');
+            stages[idx].classList.add('active');
+            var bar = rows[idx].querySelector('.crail-prog i');
+            bar.style.animation = 'none';
+            void bar.offsetWidth;
+            bar.style.animation = '';
+            stageStart(idx);
+            stageSeq.run(stageSteps(idx));
+            if (running && !hovered && !focused) schedule(CYCLE);
+            else {
+              clearTimer();
+              remainMs = CYCLE;
+            }
+          }
+          function updatePause() {
+            var paused = hovered || focused;
+            consoleEl.classList.toggle('paused', paused);
+            if (!running) return;
+            if (paused) {
+              if (timer) {
+                remainMs = Math.max(400, remainMs - (Date.now() - startAt));
+                clearTimer();
+              }
+            } else if (!timer) {
+              schedule(remainMs);
+            }
+          }
+          rows[idx].classList.add('active');
+          stages[idx].classList.add('active');
+          rows.forEach(function (row, i) {
+            row.addEventListener('click', function () {
+              activate(i);
+            });
+          });
+          consoleEl.addEventListener('mouseenter', function () {
+            hovered = true;
+            updatePause();
+          });
+          consoleEl.addEventListener('mouseleave', function () {
+            hovered = false;
+            updatePause();
+          });
+          consoleEl.addEventListener('focusin', function () {
+            focused = true;
+            updatePause();
+          });
+          consoleEl.addEventListener('focusout', function (e) {
+            focused = !!(e.relatedTarget && consoleEl.contains(e.relatedTarget));
+            updatePause();
+          });
+          var cio = new IntersectionObserver(
+            function (entries) {
+              entries.forEach(function (en) {
+                if (en.isIntersecting && !running) {
+                  running = true;
+                  activate(idx);
+                } else if (!en.isIntersecting && running) {
+                  running = false;
+                  clearTimer();
+                  stageSeq.stop();
+                  stageFinal(idx);
+                }
+              });
+            },
+            { threshold: 0.5 }
+          );
+          cio.observe(consoleEl);
+        }
+
+        // Nav 滚动态
+        var nav = document.querySelector('.nav');
+        function onScroll() {
+          if (window.scrollY > 8) nav.classList.add('scrolled');
+          else nav.classList.remove('scrolled');
+        }
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+      })();
+    </script>
+  </body>
+</html>
